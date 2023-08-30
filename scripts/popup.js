@@ -24,23 +24,31 @@ const unsolvedDiv = document.getElementById('unsolved-message');
 const solvedDiv = document.getElementById('solved-message');
 unsolvedDiv.textContent = randomUnSolvedMessage;
 solvedDiv.textContent = randomSolvedMessage;
-
-chrome.runtime.sendMessage({ action: 'getProblemStatus' }, function (response) {
-  const leetcodeName = document.getElementById('leetcode-problem-name');
-  const leetcodeButton = document.getElementById('leetcode-problem-button');
-  const questionMsg = document.querySelector('.question-of-day-msg');
-
-  if (response && response.problemSolved) {
-    unsolvedDiv.style.display = 'none';
-    solvedDiv.style.display = 'block';
-    leetcodeButton.style.display = 'none';
-    questionMsg.style.display = 'none';
-  } else if (response && response.problem) {
-    leetcodeButton.href = response.problem.url;
-    leetcodeName.textContent = response.problem.name;
+let backgroundPage = chrome.extension.getBackgroundPage();
+chrome.runtime.sendMessage(
+  { action: 'getProblemStatus' },
+  async function (response) {
+    const leetcodeName = document.getElementById('leetcode-problem-name');
+    const leetcodeButton = document.getElementById('leetcode-problem-button');
+    const questionMsg = document.querySelector('.question-of-day-msg');
+    const result = await chrome.storage.local.get([
+      'problemName',
+      'problemURL',
+    ]);
+    const currentLeetCodeProblemName = result.problemName;
+    const currentLeetCodeProblemURL = result.problemURL;
+    leetcodeButton.href = currentLeetCodeProblemURL;
+    leetcodeName.textContent = currentLeetCodeProblemName;
     leetcodeButton.addEventListener('click', function (event) {
       event.preventDefault();
       chrome.tabs.create({ url: this.href });
     });
+
+    if (response && response.problemSolved) {
+      unsolvedDiv.style.display = 'none';
+      solvedDiv.style.display = 'block';
+      leetcodeButton.style.display = 'none';
+      questionMsg.style.display = 'none';
+    }
   }
-});
+);

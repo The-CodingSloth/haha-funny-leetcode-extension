@@ -147,7 +147,9 @@ const checkIfUserSolvedProblem = async (details) => {
 };
 
 // Initialize the storage
-updateStorage();
+chrome.runtime.onInstalled.addListener(async () => {
+  await updateStorage();
+});
 // Ensure the alarm is set when the extension starts
 chrome.alarms.get('updateStorage', (alarm) => {
   //Create an alarm to update the storage every 24 hours
@@ -156,8 +158,8 @@ chrome.alarms.get('updateStorage', (alarm) => {
   }
 });
 //Update the storage when the alarm is fired
-chrome.alarms.onAlarm.addListener(() => {
-  updateStorage();
+chrome.alarms.onAlarm.addListener(async () => {
+  await updateStorage();
 });
 
 chrome.runtime.onMessage.addListener(onMessageReceived);
