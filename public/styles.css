@@ -1,0 +1,60 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  width: 25rem;
+  height: 15.5rem;
+  color: white;
+  box-shadow: 0px 5px 20px 2px rgb(0 0 0 / 0.35); /* Adjusted for better visibility */
+  background-color: rgb(21, 21, 30);
+}
+
+.title {
+  font-size: 1.3rem;
+  text-align: center;
+  padding: 0.5rem;
+  background-color: rgb(87, 74, 139);
+}
+
+#unsolved-message,
+#solved-message {
+  text-align: center;
+  padding: 0.5rem;
+}
+
+#unsolved-message {
+  font-size: 0.85rem;
+}
+#solved-message {
+  font-size: 1.5rem;
+}
+.leetcode-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+#question-of-day-msg {
+  font-size: 1.1rem;
+}
+#leetcode-problem-name {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  width: 100%;
+  margin: 0.5rem 0;
+}
+
+#leetcode-problem-button {
+  background-color: #4f46e5;
+  text-decoration: none;
+  font-size: 1rem;
+  text-align: center;
+  width: 30%;
+  border-radius: 5px;
+  padding: 0.5rem;
+  color: white;
+}
