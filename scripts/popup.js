@@ -34,9 +34,11 @@ chrome.runtime.sendMessage(
     const result = await chrome.storage.local.get([
       'problemName',
       'problemURL',
+      'leetCodeProblemSolved',
     ]);
     const currentLeetCodeProblemName = result.problemName;
     const currentLeetCodeProblemURL = result.problemURL;
+    const leetcodeProblemSolved = result.leetCodeProblemSolved;
     leetcodeButton.href = currentLeetCodeProblemURL;
     leetcodeName.textContent = currentLeetCodeProblemName;
     leetcodeButton.addEventListener('click', function (event) {
@@ -44,11 +46,12 @@ chrome.runtime.sendMessage(
       chrome.tabs.create({ url: this.href });
     });
 
-    if (response && response.problemSolved) {
+    if (leetcodeProblemSolved || (response && response.problemSolved)) {
       unsolvedDiv.style.display = 'none';
       solvedDiv.style.display = 'block';
       leetcodeButton.style.display = 'none';
       questionMsg.style.display = 'none';
+      leetcodeName.textContent = `Today you solved ${currentLeetCodeProblemName}`;
     }
   }
 );

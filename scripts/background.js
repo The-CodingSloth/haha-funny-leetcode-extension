@@ -90,25 +90,27 @@ async function setRedirectRule(newRedirectUrl) {
 }
 const updateStorage = async () => {
   try {
-    const { problemURL, problemName, problemDate, leetCodeProblemSolved } =
-      await chrome.storage.local.get([
-        'problemURL',
-        'problemName',
-        'problemDate',
-        'leetCodeProblemSolved',
-      ]);
-    let { randomProblemURL, randomProblemName } =
-      await generateRandomLeetCodeProblem();
-    leetCodeProblem = { url: randomProblemURL, name: randomProblemName };
-    await chrome.storage.local.set({
-      problemURL: randomProblemURL,
-      problemName: randomProblemName,
-      problemDate: new Date().toDateString(),
-      leetCodeProblemSolved: false,
-    });
-    await setRedirectRule(randomProblemURL);
+    const currentStorage = await chrome.storage.local.get([
+      'leetCodeProblemSolved',
+    ]);
+    if (!currentStorage.leetCodeProblemSolved) {
+      try {
+        let { randomProblemURL, randomProblemName } =
+          await generateRandomLeetCodeProblem();
+        leetCodeProblem = { url: randomProblemURL, name: randomProblemName };
+        await chrome.storage.local.set({
+          problemURL: randomProblemURL,
+          problemName: randomProblemName,
+          problemDate: new Date().toDateString(),
+          leetCodeProblemSolved: false,
+        });
+        await setRedirectRule(randomProblemURL);
+      } catch (error) {
+        console.error('Error updating storage:', error);
+      }
+    }
   } catch (error) {
-    console.error('Error updating storage:', error);
+    console.error('Error getting storage:', error);
   }
 };
 
@@ -138,6 +140,7 @@ const checkIfUserSolvedProblem = async (details) => {
         chrome.declarativeNetRequest.updateDynamicRules({
           removeRuleIds: [RULE_ID], // use RULE_ID constant
         });
+        chrome.storage.local.set({ leetCodeProblemSolved: true });
         sendUserSolvedMessage();
       }
     } catch (error) {
