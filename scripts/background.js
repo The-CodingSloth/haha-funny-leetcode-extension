@@ -155,9 +155,17 @@ chrome.runtime.onInstalled.addListener(async () => {
 });
 // Ensure the alarm is set when the extension starts
 chrome.alarms.get('updateStorage', (alarm) => {
-  //Create an alarm to update the storage every 24 hours
   if (!alarm) {
-    chrome.alarms.create('updateStorage', { periodInMinutes: 24 * 60 });
+    // Find the time duration until midnight
+    const currentTime = Date.now();
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    const msUntilMidnight = midnight.getTime() - currentTime;
+    //Create an alarm to update the storage every 24 hours at midnight
+    chrome.alarms.create('updateStorage', {
+      when: Date.now() + msUntilMidnight,
+      periodInMinutes: 24 * 60,
+    });
   }
 });
 //Update the storage when the alarm is fired
