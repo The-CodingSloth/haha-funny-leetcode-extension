@@ -24,7 +24,6 @@ const unsolvedDiv = document.getElementById('unsolved-message');
 const solvedDiv = document.getElementById('solved-message');
 unsolvedDiv.textContent = randomUnSolvedMessage;
 solvedDiv.textContent = randomSolvedMessage;
-let backgroundPage = chrome.extension.getBackgroundPage();
 chrome.runtime.sendMessage(
   { action: 'getProblemStatus' },
   async function (response) {

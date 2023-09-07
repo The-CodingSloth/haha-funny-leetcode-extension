@@ -90,27 +90,19 @@ async function setRedirectRule(newRedirectUrl) {
 }
 const updateStorage = async () => {
   try {
-    const currentStorage = await chrome.storage.local.get([
-      'leetCodeProblemSolved',
-    ]);
-    if (!currentStorage.leetCodeProblemSolved) {
-      try {
-        let { randomProblemURL, randomProblemName } =
-          await generateRandomLeetCodeProblem();
-        leetCodeProblem = { url: randomProblemURL, name: randomProblemName };
-        await chrome.storage.local.set({
-          problemURL: randomProblemURL,
-          problemName: randomProblemName,
-          problemDate: new Date().toDateString(),
-          leetCodeProblemSolved: false,
-        });
-        await setRedirectRule(randomProblemURL);
-      } catch (error) {
-        console.error('Error updating storage:', error);
-      }
-    }
+    let { randomProblemURL, randomProblemName } =
+      await generateRandomLeetCodeProblem();
+    leetcodeProblemSolved = false;
+    leetCodeProblem = { url: randomProblemURL, name: randomProblemName };
+    await chrome.storage.local.set({
+      problemURL: randomProblemURL,
+      problemName: randomProblemName,
+      problemDate: new Date().toDateString(),
+      leetCodeProblemSolved: false,
+    });
+    await setRedirectRule(randomProblemURL);
   } catch (error) {
-    console.error('Error getting storage:', error);
+    console.error('Error updating storage:', error);
   }
 };
 
@@ -153,6 +145,7 @@ const checkIfUserSolvedProblem = async (details) => {
 chrome.runtime.onInstalled.addListener(async () => {
   await updateStorage();
 });
+
 // Ensure the alarm is set when the extension starts
 chrome.alarms.get('updateStorage', (alarm) => {
   if (!alarm) {
@@ -163,14 +156,17 @@ chrome.alarms.get('updateStorage', (alarm) => {
     const msUntilMidnight = midnight.getTime() - currentTime;
     //Create an alarm to update the storage every 24 hours at midnight
     chrome.alarms.create('updateStorage', {
+      // When means the time the alarm will fire, so in this case it will fire at midnight
       when: Date.now() + msUntilMidnight,
+      // Period means the time between each alarm firing, so in this case it will fire every 24 hours after the first midnight alarm
       periodInMinutes: 24 * 60,
     });
   }
 });
+
 //Update the storage when the alarm is fired
 chrome.alarms.onAlarm.addListener(async () => {
-  await updateStorage();
+  updateStorage();
 });
 
 chrome.runtime.onMessage.addListener(onMessageReceived);
