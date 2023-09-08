@@ -26,7 +26,7 @@ let userJustSubmitted = false;
 const generateRandomLeetCodeProblem = async () => {
   try {
     const res = await fetch(
-      chrome.runtime.getURL('leetCode-problems/blind75Problems.json')
+      chrome.runtime.getURL('leetcode-problems/blind75Problems.json')
     );
     const leetCodeProblems = await res.json();
     const randomIndex = Math.floor(Math.random() * leetCodeProblems.length);
