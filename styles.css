@@ -50,11 +50,16 @@ body {
 
 #leetcode-problem-button {
   background-color: #4f46e5;
-  text-decoration: none;
   font-size: 1rem;
-  text-align: center;
+  border: none;
   width: 30%;
-  border-radius: 5px;
-  padding: 0.5rem;
+  border-radius: 10px;
+  padding: 0.75rem;
   color: white;
+  font-weight: 600;
+}
+
+#leetcode-problem-button:hover {
+  cursor: pointer;
+  background-color: #3c34b5;
 }
