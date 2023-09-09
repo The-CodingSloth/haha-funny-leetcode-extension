@@ -110,12 +110,19 @@ const updateStorage = async () => {
     await setRedirectRule(randomProblemURL)
   }
 }
+// Checks if a request is currently happening. In order to not make another request (prevents infinite loop)
+let scriptInitiatedRequest = false
 
 const checkIfUserSolvedProblem = async (details) => {
-  // Ensure user submitted within the last 30 seconds
+  if (scriptInitiatedRequest) {
+    scriptInitiatedRequest = false
+    return
+  }
+  // Checks if the request has been made within the last 30 seconds (could also be helpful for future features)
   if (lastSubmissionDate.getTime() + 30000 < Date.now()) return
   if (isSubmissionSuccessURL(details.url)) {
     try {
+      scriptInitiatedRequest = true
       const response = await fetch(details.url)
       const data = await response.json()
 
