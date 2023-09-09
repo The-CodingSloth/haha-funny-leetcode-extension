@@ -1,10 +1,10 @@
 /** @type {import('jest').Config} */
 const config = {
   verbose: true,
-  preset: 'jest-puppeteer',
+  preset: "jest-puppeteer",
   transform: {
-    '^.+\\.(js|jsx|mjs|cjs|ts|tsx)$': 'babel-jest',
-  },
-};
+    "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "babel-jest"
+  }
+}
 
-module.exports = config;
+module.exports = config
