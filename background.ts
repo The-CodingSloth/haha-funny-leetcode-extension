@@ -23,7 +23,7 @@ let leetCodeProblem = {
   url: "",
   name: ""
 }
-let userJustSubmitted = false
+let lastSubmissionDate = new Date(0)
 
 // TODO: Need to find a way to filter out premium problems
 const generateRandomLeetCodeProblem = async () => {
@@ -53,10 +53,7 @@ const onMessageReceived = (message, sender, sendResponse) => {
       })
       break
     case "userClickedSubmit":
-      userJustSubmitted = true
-      setTimeout(() => {
-        userJustSubmitted = false
-      }, 30000) // Reset after 30 seconds
+      lastSubmissionDate = new Date()
       break
     default:
       console.warn("Unknown message action:", message.action)
@@ -115,7 +112,9 @@ const updateStorage = async () => {
 }
 
 const checkIfUserSolvedProblem = async (details) => {
-  if (userJustSubmitted && isSubmissionSuccessURL(details.url)) {
+  // Ensure user submitted within the last 30 seconds
+  if (lastSubmissionDate.getTime() + 30000 < Date.now()) return
+  if (isSubmissionSuccessURL(details.url)) {
     try {
       const response = await fetch(details.url)
       const data = await response.json()
@@ -125,7 +124,6 @@ const checkIfUserSolvedProblem = async (details) => {
         console.log(
           "Congratulations! You've solved the problem!, I'll see you tomorrow"
         )
-        userJustSubmitted = false
         leetcodeProblemSolved = true
         // They solved the problem, so no need to redirect anymore they're free, for now
         chrome.declarativeNetRequest.updateDynamicRules({
