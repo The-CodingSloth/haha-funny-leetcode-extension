@@ -13,6 +13,7 @@ const isSubmissionSuccessURL = (url: string) =>
 const sendUserSolvedMessage = () => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     chrome.tabs.sendMessage(tabs[0].id, { action: "userSolvedProblem" })
+    console.log("User solved problem message sent")
   })
 }
 
@@ -61,45 +62,41 @@ const onMessageReceived = (message, sender, sendResponse) => {
 }
 
 async function setRedirectRule(newRedirectUrl: string) {
-  let newRedirectRule: chrome.declarativeNetRequest.Rule = {
+  // Can't use built in chrome types for firefox
+  let newRedirectRule = {
     id: RULE_ID,
     priority: 1,
     action: {
-      type: chrome.declarativeNetRequest.RuleActionType.REDIRECT,
+      type: "redirect",
       redirect: { url: newRedirectUrl }
     },
     condition: {
       urlFilter: "*://*/*",
-      excludedDomains: [
-        "leetcode.com",
-        "www.leetcode.com",
-        "developer.chrome.com"
-      ],
-      resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME]
+
+      excludedInitiatorDomains: ["leetcode.com"],
+
+      resourceTypes: ["main_frame"]
     }
   }
 
   try {
     chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: [RULE_ID],
+      // Type error for addRules, but it works
       addRules: [newRedirectRule]
     })
+    const currentRules = await chrome.declarativeNetRequest.getDynamicRules()
     console.log("Redirect rule updated")
+    console.log("Current rules:", currentRules)
   } catch (error) {
     console.error("Error updating redirect rule:", error)
   }
 }
 const updateStorage = async () => {
-  const result = await generateRandomLeetCodeProblem()
-  if (!result) {
-    throw new Error("Error generating random problem")
-  } else {
+  try {
+    const result = await generateRandomLeetCodeProblem()
+
     const { randomProblemURL, randomProblemName } = result
-    console.log(
-      "Random problem generated:",
-      randomProblemName,
-      randomProblemURL
-    )
     leetcodeProblemSolved = false
     leetCodeProblem = { url: randomProblemURL, name: randomProblemName }
     await storage.set("problemURL", randomProblemURL)
@@ -108,6 +105,8 @@ const updateStorage = async () => {
     await storage.set("leetCodeProblemSolved", false)
 
     await setRedirectRule(randomProblemURL)
+  } catch (error) {
+    console.error(error)
   }
 }
 // Checks if a request is currently happening. In order to not make another request (prevents infinite loop)

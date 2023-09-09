@@ -1,7 +1,7 @@
 {
   "name": "leetcode-torture",
   "displayName": "Leetcode torture",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "An extension to torture you with LeetCode problems and force you to solve them.",
   "author": "The Coding Sloth",
   "scripts": {
@@ -30,6 +30,11 @@
     "typescript": "5.2.2"
   },
   "manifest": {
+    "browser_specific_settings": {
+      "gecko": {
+        "id": "{743ff2c1-74c2-4384-a218-2c33d6a765a5}"
+      }
+    },
     "permissions": [
       "declarativeNetRequest",
       "declarativeNetRequestFeedback",
