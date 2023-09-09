@@ -2,7 +2,7 @@ This is a [Plasmo extension](https://docs.plasmo.com/) project bootstrapped with
 
 # [LeetCode Torture](https://chromewebstore.google.com/detail/leetcode-torture/clbhgfneekiimoaakhhdjimgnnbnfbeh)
 
-![LeetCode Torture Logo](https://raw.githubusercontent.com/The-CodingSloth/haha-funny-leetcode-extension/main/public/icons/icon128.png)
+![LeetCode Torture Logo](https://raw.githubusercontent.com/The-CodingSloth/haha-funny-leetcode-extension/main/assets/icon.png)
 
 LeetCode Torture is an extension designed to make you productive to ace those technical interviews. When you activate this extension, you won't be able to access any websites except LeetCode until you solve your randomly assigned LeetCode problem. [Here's the video on YouTube.](https://youtu.be/e4ReFOWMG9o?si=CJ2EdqVPFPdcc7GN)
 
