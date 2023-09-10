@@ -27,6 +27,7 @@ let lastSubmissionDate = new Date(0)
 
 // Get Problem List from leetcode graphql API
 const getProblemList = async () => {
+  const difficulty = await storage.get("difficulty")
   try {
     let reply
     const query = `
@@ -35,7 +36,9 @@ const getProblemList = async () => {
           categorySlug: ""
           limit: -1
           skip: 0
-          filters: {}
+          filters: {
+            ${(difficulty && difficulty !== "all") ? "difficulty: " + difficulty : "" }
+          }
         ) {
           questions: data {
             acRate
