@@ -79,10 +79,7 @@ const getProblemList = async () => {
 // TODO: Need to find a way to filter out premium problems
 const generateRandomLeetCodeProblem = async () => {
   try {
-    const res = await fetch(
-      chrome.runtime.getURL("leetcode-problems/blind75Problems.json")
-    )
-    const leetCodeProblems = await res.json()
+    const leetCodeProblems = await getProblemList()
     const randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
     const randomProblem = leetCodeProblems[randomIndex]
     const randomProblemURL = randomProblem.href
