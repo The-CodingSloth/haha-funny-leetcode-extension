@@ -1,6 +1,7 @@
 import "styles.css"
 
 import { useStorage } from "@plasmohq/storage/hook"
+import { useEffect, useState } from "react"
 
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html
@@ -17,17 +18,24 @@ const IndexPopup = () => {
     "The LeetCode Torture gods are pleased. Rest, for tomorrow brings a new challenge",
     "Solved your problem for the day, nice, go treat yourself"
   ]
-  const randomUnsolvedIndex = Math.floor(
-    Math.random() * possibleUnSolvedMessages.length
-  )
-  const randomSolvedIndex = Math.floor(
-    Math.random() * possibleSolvedMessages.length
-  )
-  const randomUnsolvedMessage = possibleUnSolvedMessages[randomUnsolvedIndex]
-  const randomSolvedMessage = possibleSolvedMessages[randomSolvedIndex]
+  const [randomUnsolvedMessage, setRandomUnsolvedMessage] = useState("")
+  const [randomSolvedMessage, setRandomSolvedMessage] = useState("")
   const [problemName] = useStorage<string>("problemName")
   const [problemURL] = useStorage<string>("problemURL")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
+  const [difficulty, setDifficulty] = useStorage<string>("difficulty")
+  
+  useEffect(() => {
+    const randomUnsolvedIndex = Math.floor(
+      Math.random() * possibleUnSolvedMessages.length
+    )
+    const randomSolvedIndex = Math.floor(
+      Math.random() * possibleSolvedMessages.length
+    )
+    
+    setRandomSolvedMessage(possibleSolvedMessages[randomSolvedIndex])
+    setRandomUnsolvedMessage(possibleUnSolvedMessages[randomUnsolvedIndex])
+  }, [])
 
   return (
     <div>
