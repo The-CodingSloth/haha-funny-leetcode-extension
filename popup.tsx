@@ -57,6 +57,16 @@ const IndexPopup = () => {
       ) : (
         <h2 id="solved-message">{randomSolvedMessage}</h2>
       )}
+      <label id="difficulty-selection">
+        Set difficulty
+        <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
+          <option value="all">All</option>
+          <option value="EASY">Easy</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HARD">Hard</option>
+        </select>
+      </label>
+      <h2>{difficulty}</h2>
     </div>
   )
 }
