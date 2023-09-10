@@ -25,6 +25,57 @@ let leetCodeProblem = {
 }
 let lastSubmissionDate = new Date(0)
 
+// Get Problem List from leetcode graphql API
+const getProblemList = async () => {
+  try {
+    let reply
+    const query = `
+      query problemsetQuestionList {
+        problemsetQuestionList: questionList(
+          categorySlug: ""
+          limit: -1
+          skip: 0
+          filters: {}
+        ) {
+          questions: data {
+            acRate
+            difficulty
+            freqBar
+            frontendQuestionId: questionFrontendId
+            isFavor
+            paidOnly: isPaidOnly
+            status
+            title
+            titleSlug
+            topicTags {
+              name
+              id
+              slug
+            }
+            hasSolution
+            hasVideoSolution
+          }
+        }
+      }
+    `
+  
+    const body = {
+      query
+    }
+  
+    await fetch('https://leetcode.com/graphql', {method: "POST", body: JSON.stringify(body), headers: {
+      "Content-Type": "application/json",
+    }})
+    .then(response => response.json())
+    .then(response => {
+      reply = response
+    })
+    return reply.data.problemsetQuestionList.questions
+  } catch (error) {
+    console.log(error.toString())
+  }
+}
+
 // TODO: Need to find a way to filter out premium problems
 const generateRandomLeetCodeProblem = async () => {
   try {
