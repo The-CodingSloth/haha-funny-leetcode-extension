@@ -63,3 +63,9 @@ body {
   cursor: pointer;
   background-color: #3c34b5;
 }
+
+#current-streak-message, #best-streak-message {
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 0.5rem;
+}
