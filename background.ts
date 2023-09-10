@@ -82,8 +82,8 @@ const generateRandomLeetCodeProblem = async () => {
     const leetCodeProblems = await getProblemList()
     const randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
     const randomProblem = leetCodeProblems[randomIndex]
-    const randomProblemName = randomProblem.text
     const randomProblemURL = "https://leetcode.com/problems/" + randomProblem.title.replace(/ /g, "-").toLowerCase() + "/"
+    const randomProblemName = randomProblem.title
     return { randomProblemURL, randomProblemName }
   } catch (error) {
     console.error("Error generating random problem", error)
