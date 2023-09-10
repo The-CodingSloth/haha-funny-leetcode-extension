@@ -144,7 +144,7 @@ async function setRedirectRule(newRedirectUrl: string) {
     console.error("Error updating redirect rule:", error)
   }
 }
-const updateStorage = async () => {
+export const updateStorage = async () => {
   const result = await generateRandomLeetCodeProblem()
   if (!result) {
     throw new Error("Error generating random problem")
