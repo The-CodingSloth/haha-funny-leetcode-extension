@@ -80,7 +80,11 @@ const getProblemList = async () => {
 const generateRandomLeetCodeProblem = async () => {
   try {
     const leetCodeProblems = await getProblemList()
-    const randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+    let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+    while(leetCodeProblems[randomIndex].paidOnly){
+      randomIndex++
+      randomIndex = (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
+    }
     const randomProblem = leetCodeProblems[randomIndex]
     const randomProblemURL = "https://leetcode.com/problems/" + randomProblem.title.replace(/ /g, "-").toLowerCase() + "/"
     const randomProblemName = randomProblem.title
