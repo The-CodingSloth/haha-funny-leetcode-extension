@@ -33,7 +33,6 @@ const IndexPopup = () => {
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
-
   const [drawerClosed, setDrawerClosed] = useState(true)
 
   return (
