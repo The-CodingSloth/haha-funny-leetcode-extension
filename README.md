@@ -48,10 +48,11 @@ That's perfectly fine, take some time and read the code to understand what's goi
 
 ### I am getting an ERROR: Failed to set up Chrome/Chromium <somenumbershere> ! Set "PUPPETEER_SKIP_DOWNLOAD" env variable to skip download when I npm install on my Mac M1/just regular Mac
 
+- Recommendation - ditch Chrome, use Chromium. If following this route, make sure to properly delete Chrome
 - Open your terminal
 - cd ~
-- open your .bash_profile. You can use vi or nano or whatever
-- add this line - export PUPPETEER_SKIP_DOWNLOAD='true'
+- open your .bash_profile or .zshrc. You can use vi or nano or whatever
+- add this line - export PUPPETEER_SKIP_DOWNLOAD=true and export PUPPETEER_EXECUTABLE_PATH=`which chromium`
 - once done cat your file to see if you have added the line
-- once this is done run 'source ~/.bash_profile'. This should reload and link everything.
+- once this is done run 'source ~/.bash_profile' or .zshrc. This should reload and link everything.
 - Try to install again via npm install. Everything should now work.
