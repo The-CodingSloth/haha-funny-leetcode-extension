@@ -1,9 +1,9 @@
 import "styles.css"
 
 import { useStorage } from "@plasmohq/storage/hook"
-import SettingLabel from "components/SettingLabel"
+
 import { useState } from "react"
-import { SettingDrawer } from "~components/SettingDrawer"
+import SettingDrawer from "components/SettingDrawer"
 
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html

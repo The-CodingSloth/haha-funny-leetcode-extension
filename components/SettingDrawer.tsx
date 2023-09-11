@@ -1,7 +1,7 @@
 import React from 'react'
 import SettingLabel from './SettingLabel'
 
-export const SettingDrawer = ({close, setClose}) => {
+const SettingDrawer = ({close, setClose}) => {
   const settingList = [
     {
       "name": "Problem Sets",
@@ -53,3 +53,5 @@ export const SettingDrawer = ({close, setClose}) => {
     </div>
   )
 }
+
+export default SettingDrawer
