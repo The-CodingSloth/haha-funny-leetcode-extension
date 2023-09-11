@@ -28,8 +28,8 @@ const IndexPopup = () => {
   const [problemName] = useStorage<string>("problemName")
   const [problemURL] = useStorage<string>("problemURL")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
-  const currentStreak = useStorage<number>("currentStreak") ?? 0
-  const bestStreak = useStorage<number>("bestStreak") ?? 0
+  const [currentStreak] = useStorage<number>("currentStreak")
+  const [bestStreak] = useStorage<number>("bestStreak")
 
   return (
     <div>
@@ -51,8 +51,8 @@ const IndexPopup = () => {
       ) : (
         <h2 id="solved-message">{randomSolvedMessage}</h2>
       )}
-      <h2 id="current-streak-message">Current Streak: {+currentStreak}</h2>
-      <h2 id="best-streak-message">Best Streak: {+bestStreak}</h2>
+      <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
+      <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
     </div>
   )
 }
