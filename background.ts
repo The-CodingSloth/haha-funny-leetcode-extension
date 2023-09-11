@@ -146,8 +146,10 @@ const checkIfUserSolvedProblem = async (details) => {
   }
 }
 
+// Check if a streak should be updated. Should only be called when a problem has been completed.
 async function updateStreak() {
-  const lastCompleted: Date = await storage.get('lastCompleted') ?? new Date(0)
+  const lastCompletedString = await storage.get('lastCompleted')
+  const lastCompleted = lastCompletedString ? new Date(lastCompletedString) : new Date(0)
   const now = new Date();
 
   if (lastCompleted.toDateString() === now.toDateString()) return
@@ -163,8 +165,10 @@ async function updateStreak() {
   if (newStreak > bestStreak) await storage.set("bestStreak", newStreak)
 }
 
+// Check if a streak should be reset. Should be called when extension starts up and peridically.
 async function checkResetStreak() {
-  const lastCompleted: Date = await storage.get("lastCompleted") ?? new Date(0) // Returns Unix Epoch if item is null
+  const lastCompletedString = await storage.get('lastCompleted')
+  const lastCompleted = lastCompletedString ? new Date(lastCompletedString) : new Date(0) // Returns Unix Epoch if item is null
   const now = new Date();
   const yesterday = now.getDate() - 1;
 
@@ -173,9 +177,10 @@ async function checkResetStreak() {
   }
 }
 
-// Initialize the storage
+// Initialize
 chrome.runtime.onInstalled.addListener(async () => {
   await updateStorage()
+  await checkResetStreak()
 })
 
 // Ensure the alarm is set when the extension starts
