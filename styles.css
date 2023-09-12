@@ -10,6 +10,35 @@ body {
   background-color: rgb(21, 21, 30);
 }
 
+nav{
+  background-color: #4F46E5;
+  height: 2em;
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
+  align-items: center;
+  padding: 0.5em;
+}
+
+nav h1{
+  font-size: 1.5em;
+  padding: 0;
+  margin: 0;
+  line-height: 1em;
+  font-weight: 500;
+}
+
+nav .flex{
+  flex: 1;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0; /* Optional, removes any remaining margin */
+}
+
 .title {
   font-size: 1.3rem;
   text-align: center;
@@ -68,4 +97,108 @@ body {
   font-size: 1.1rem;
   text-align: center;
   padding: 0.5rem;
+}
+
+#difficulty-selection{
+  display: flex;
+  font-size: 1.2em;
+  flex-direction: row;
+  align-items: center;
+  width: 70%;
+  margin: 1em auto 0 auto;
+}
+
+#difficulty-selection p{
+  padding-right: 1em;
+}
+
+#difficulty-selection select{
+  background-color: transparent;
+  border: 1px solid gray;
+  padding: 0.5em;
+  color: white;
+  border-radius: 0.3em;
+  flex: 1;
+  outline: 0;
+  cursor: pointer;
+}
+
+#difficulty-selection select:hover{
+  outline: 1px solid #ffffff80;
+}
+
+#difficulty-selection select option{
+  color: black;
+}
+#current-streak-message, #best-streak-message {
+  font-size: 1.1rem;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 100%;
+  height: 100%;
+  background-color: #fff;
+  transition: right 0.3s ease-in-out;
+}
+
+.drawer.opened {
+  right: 0;
+}
+
+.drawer .setting-labels{
+  background-color: #15151E;
+  height: 100%;
+  font-size: 1em;
+  padding: 1em;
+  list-style: none;
+}
+
+.setting-label{
+  display: flex;
+  flex-direction: row;
+  align-items: top;
+}
+
+.setting-labels li:nth-of-type(n+2){
+  padding-top: 1em;
+}
+
+.setting-label p.name{
+  font-size: 1.4em;
+  font-weight: 700;
+  padding-bottom: 0.2em;
+}
+
+.setting-label p.description{
+  font-weight: 700;
+  color: #AFAAAA;
+}
+
+.setting-label .setting-text{
+  flex: 1;
+}
+
+.setting-label .setting-dropdown{
+  background-color: transparent;
+  color: #ffffff;
+  outline: 0;
+  border: 0;
+  font-size: 1.4em;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.setting-label .setting-dropdown option{
+  background-color: #4F46E5;
+}
+
+.setting-label .setting-input{
+  height: 1.3em;
+  padding: 0.2em;
+  width: 8em;
 }

@@ -25,17 +25,72 @@ let leetCodeProblem = {
 }
 let lastSubmissionDate = new Date(0)
 
+// Get Problem List from leetcode graphql API
+const getProblemList = async () => {
+  const difficulty = await storage.get("difficulty")
+  try {
+    let reply
+    const query = `
+      query problemsetQuestionList {
+        problemsetQuestionList: questionList(
+          categorySlug: ""
+          limit: -1
+          skip: 0
+          filters: {
+            ${(difficulty && difficulty !== "all") ? "difficulty: " + difficulty : "" }
+          }
+        ) {
+          questions: data {
+            acRate
+            difficulty
+            freqBar
+            frontendQuestionId: questionFrontendId
+            isFavor
+            paidOnly: isPaidOnly
+            status
+            title
+            titleSlug
+            topicTags {
+              name
+              id
+              slug
+            }
+            hasSolution
+            hasVideoSolution
+          }
+        }
+      }
+    `
+  
+    const body = {
+      query
+    }
+  
+    await fetch('https://leetcode.com/graphql', {method: "POST", body: JSON.stringify(body), headers: {
+      "Content-Type": "application/json",
+    }})
+    .then(response => response.json())
+    .then(response => {
+      reply = response
+    })
+    return reply.data.problemsetQuestionList.questions
+  } catch (error) {
+    console.log(error.toString())
+  }
+}
+
 // TODO: Need to find a way to filter out premium problems
 const generateRandomLeetCodeProblem = async () => {
   try {
-    const res = await fetch(
-      chrome.runtime.getURL("leetcode-problems/blind75Problems.json")
-    )
-    const leetCodeProblems = await res.json()
-    const randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+    const leetCodeProblems = await getProblemList()
+    let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+    while(leetCodeProblems[randomIndex].paidOnly){
+      randomIndex++
+      randomIndex = (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
+    }
     const randomProblem = leetCodeProblems[randomIndex]
-    const randomProblemURL = randomProblem.href
-    const randomProblemName = randomProblem.text
+    const randomProblemURL = "https://leetcode.com/problems/" + randomProblem.title.replace(/ /g, "-").toLowerCase() + "/"
+    const randomProblemName = randomProblem.title
     return { randomProblemURL, randomProblemName }
   } catch (error) {
     console.error("Error generating random problem", error)
@@ -89,7 +144,7 @@ async function setRedirectRule(newRedirectUrl: string) {
     console.error("Error updating redirect rule:", error)
   }
 }
-const updateStorage = async () => {
+export const updateStorage = async () => {
   const result = await generateRandomLeetCodeProblem()
   if (!result) {
     throw new Error("Error generating random problem")
