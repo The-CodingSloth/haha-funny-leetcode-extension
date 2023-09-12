@@ -4,6 +4,9 @@ import { useStorage } from "@plasmohq/storage/hook"
 import { useEffect, useState } from "react"
 import { updateStorage } from "~background"
 
+import { useState } from "react"
+import SettingDrawer from "components/SettingDrawer"
+
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html
   const possibleUnSolvedMessages = [
@@ -27,6 +30,7 @@ const IndexPopup = () => {
   const [difficulty, setDifficulty] = useStorage<string>("difficulty")
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
+  const [drawerClosed, setDrawerClosed] = useState(true)
   
   useEffect(() => {
     const randomUnsolvedIndex = Math.floor(
@@ -43,7 +47,10 @@ const IndexPopup = () => {
 
   return (
     <div>
-      <h1 className="title">Welcome to the LeetCode Gulag</h1>
+      <nav>
+        <h1 className="flex">Welcome to the LeetCode Gulag</h1>
+        <button onClick={() => setDrawerClosed(!drawerClosed)}>icon</button>
+      </nav>
       {!leetcodeProblemSolved ? (
         <>
           <h2 id="unsolved-message">{randomUnsolvedMessage}</h2>
@@ -75,6 +82,7 @@ const IndexPopup = () => {
       </label>
       <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
       <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
+      <SettingDrawer close={drawerClosed} setClose={setDrawerClosed} />
     </div>
   )
 }
