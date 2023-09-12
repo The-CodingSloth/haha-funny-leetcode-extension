@@ -25,6 +25,8 @@ const IndexPopup = () => {
   const [problemURL] = useStorage<string>("problemURL")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
   const [difficulty, setDifficulty] = useStorage<string>("difficulty")
+  const [currentStreak] = useStorage<number>("currentStreak")
+  const [bestStreak] = useStorage<number>("bestStreak")
   
   useEffect(() => {
     const randomUnsolvedIndex = Math.floor(
@@ -37,6 +39,7 @@ const IndexPopup = () => {
     setRandomSolvedMessage(possibleSolvedMessages[randomSolvedIndex])
     setRandomUnsolvedMessage(possibleUnSolvedMessages[randomUnsolvedIndex])
   }, [])
+
 
   return (
     <div>
@@ -70,6 +73,8 @@ const IndexPopup = () => {
           <option value="HARD">Hard</option>
         </select>
       </label>
+      <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
+      <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
     </div>
   )
 }
