@@ -6,7 +6,8 @@ body {
   width: 25rem;
   height: 15.5rem;
   color: white;
-  box-shadow: 0px 5px 20px 2px rgb(0 0 0 / 0.35); /* Adjusted for better visibility */
+  /* Adjusted for better visibility */
+  /* box-shadow: 0px 5px 20px 2px rgb(0 0 0 / 0.35);  */
   background-color: rgb(21, 21, 30);
 }
 
