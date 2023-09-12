@@ -26,7 +26,6 @@ const IndexPopup = () => {
   const [problemName] = useStorage<string>("problemName")
   const [problemURL] = useStorage<string>("problemURL")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
-  const [difficulty, setDifficulty] = useStorage<string>("difficulty")
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
   const [drawerClosed, setDrawerClosed] = useState(true)
@@ -67,18 +66,6 @@ const IndexPopup = () => {
       ) : (
         <h2 id="solved-message">{randomSolvedMessage}</h2>
       )}
-      <label id="difficulty-selection">
-        <p>Set difficulty</p>
-        <select value={difficulty} onChange={e => {
-          setDifficulty(e.target.value)
-          updateStorage()
-        }}>
-          <option value="all">All</option>
-          <option value="EASY">Easy</option>
-          <option value="MEDIUM">Medium</option>
-          <option value="HARD">Hard</option>
-        </select>
-      </label>
       <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
       <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
       <SettingDrawer close={drawerClosed} setClose={setDrawerClosed} />
