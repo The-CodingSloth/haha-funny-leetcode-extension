@@ -1,7 +1,10 @@
 import React from 'react'
 import SettingLabel from './SettingLabel'
+import { useStorage } from '@plasmohq/storage/hook'
+import { updateStorage } from '~background'
 
 const SettingDrawer = ({close, setClose}) => {
+  const [difficulty, setDifficulty] = useStorage<string>("difficulty")
   const settingList = [
     {
       "name": "Problem Sets",
@@ -24,8 +27,11 @@ const SettingDrawer = ({close, setClose}) => {
           "MEDIUM": "Medium",
           "HARD": "Hard"
         },
-        "defaultValue": "EASY",
-        "handleChange": (e) => {}
+        "defaultValue": difficulty,
+        "handleChange": (e) => {
+          setDifficulty(e.target.value)
+          updateStorage()
+        }
       }
     },
     {
