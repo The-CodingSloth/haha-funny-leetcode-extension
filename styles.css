@@ -64,6 +64,37 @@ body {
   background-color: #3c34b5;
 }
 
+#difficulty-selection{
+  display: flex;
+  font-size: 1.2em;
+  flex-direction: row;
+  align-items: center;
+  width: 70%;
+  margin: 1em auto 0 auto;
+}
+
+#difficulty-selection p{
+  padding-right: 1em;
+}
+
+#difficulty-selection select{
+  background-color: transparent;
+  border: 1px solid gray;
+  padding: 0.5em;
+  color: white;
+  border-radius: 0.3em;
+  flex: 1;
+  outline: 0;
+  cursor: pointer;
+}
+
+#difficulty-selection select:hover{
+  outline: 1px solid #ffffff80;
+}
+
+#difficulty-selection select option{
+  color: black;
+}
 #current-streak-message, #best-streak-message {
   font-size: 1.1rem;
   text-align: center;

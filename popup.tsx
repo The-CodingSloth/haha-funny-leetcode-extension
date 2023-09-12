@@ -1,6 +1,8 @@
 import "styles.css"
 
 import { useStorage } from "@plasmohq/storage/hook"
+import { useEffect, useState } from "react"
+import { updateStorage } from "~background"
 
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html
@@ -17,19 +19,27 @@ const IndexPopup = () => {
     "The LeetCode Torture gods are pleased. Rest, for tomorrow brings a new challenge",
     "Solved your problem for the day, nice, go treat yourself"
   ]
-  const randomUnsolvedIndex = Math.floor(
-    Math.random() * possibleUnSolvedMessages.length
-  )
-  const randomSolvedIndex = Math.floor(
-    Math.random() * possibleSolvedMessages.length
-  )
-  const randomUnsolvedMessage = possibleUnSolvedMessages[randomUnsolvedIndex]
-  const randomSolvedMessage = possibleSolvedMessages[randomSolvedIndex]
+  const [randomUnsolvedMessage, setRandomUnsolvedMessage] = useState("")
+  const [randomSolvedMessage, setRandomSolvedMessage] = useState("")
   const [problemName] = useStorage<string>("problemName")
   const [problemURL] = useStorage<string>("problemURL")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
+  const [difficulty, setDifficulty] = useStorage<string>("difficulty")
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
+  
+  useEffect(() => {
+    const randomUnsolvedIndex = Math.floor(
+      Math.random() * possibleUnSolvedMessages.length
+    )
+    const randomSolvedIndex = Math.floor(
+      Math.random() * possibleSolvedMessages.length
+    )
+    
+    setRandomSolvedMessage(possibleSolvedMessages[randomSolvedIndex])
+    setRandomUnsolvedMessage(possibleUnSolvedMessages[randomUnsolvedIndex])
+  }, [])
+
 
   return (
     <div>
@@ -51,6 +61,18 @@ const IndexPopup = () => {
       ) : (
         <h2 id="solved-message">{randomSolvedMessage}</h2>
       )}
+      <label id="difficulty-selection">
+        <p>Set difficulty</p>
+        <select value={difficulty} onChange={e => {
+          setDifficulty(e.target.value)
+          updateStorage()
+        }}>
+          <option value="all">All</option>
+          <option value="EASY">Easy</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HARD">Hard</option>
+        </select>
+      </label>
       <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
       <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
     </div>
