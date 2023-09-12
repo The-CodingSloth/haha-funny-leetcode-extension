@@ -81,8 +81,6 @@ const IndexPopup = () => {
       <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
       <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
       <SettingDrawer close={drawerClosed} setClose={setDrawerClosed} />
-      <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
-      <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
     </div>
   )
 }
