@@ -1,5 +1,5 @@
 import "styles.css"
-
+import SettingsIcon from "~components/SettingsIcon"
 import { useStorage } from "@plasmohq/storage/hook"
 import { useEffect, useState } from "react"
 import { updateStorage } from "~background"

@@ -1,5 +1,5 @@
-import React from 'react'
 import SettingLabel from './SettingLabel'
+import BackIcon from './BackIcon'
 import { useStorage } from '@plasmohq/storage/hook'
 import { updateStorage } from '~background'
 
