@@ -47,7 +47,9 @@ const IndexPopup = () => {
     <div>
       <nav>
         <h1 className="flex">Welcome to the LeetCode Gulag</h1>
-        <button onClick={() => setDrawerClosed(!drawerClosed)}>icon</button>
+        <button onClick={() => setDrawerClosed(!drawerClosed)}>
+          <SettingsIcon />
+        </button>
       </nav>
       {!leetcodeProblemSolved ? (
         <>
