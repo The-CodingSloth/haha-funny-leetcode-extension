@@ -1,5 +1,5 @@
 import "styles.css"
-
+import SettingsIcon from "~components/SettingsIcon"
 import { useStorage } from "@plasmohq/storage/hook"
 import { useEffect, useState } from "react"
 import { updateStorage } from "~background"
@@ -47,7 +47,9 @@ const IndexPopup = () => {
     <div>
       <nav>
         <h1 className="flex">Welcome to the LeetCode Gulag</h1>
-        <button onClick={() => setDrawerClosed(!drawerClosed)}>icon</button>
+        <button onClick={() => setDrawerClosed(!drawerClosed)}>
+          <SettingsIcon />
+        </button>
       </nav>
       {!leetcodeProblemSolved ? (
         <>

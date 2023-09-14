@@ -1,5 +1,5 @@
-import React from 'react'
 import SettingLabel from './SettingLabel'
+import BackIcon from './BackIcon'
 import { useStorage } from '@plasmohq/storage/hook'
 import { updateStorage } from '~background'
 
@@ -46,7 +46,9 @@ const SettingDrawer = ({close, setClose}) => {
   return (
     <div className={["drawer", close ? "" : "opened"].join(" ")}>
       <nav>
-        <button onClick={() => setClose(!close)}>Icon</button>
+        <button onClick={() => setClose(!close)}>
+          <BackIcon />
+        </button>
         <h1>Settings</h1>
       </nav>
       <ul className='setting-labels'>
