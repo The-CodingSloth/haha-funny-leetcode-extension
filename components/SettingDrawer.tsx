@@ -1,47 +1,57 @@
-import SettingLabel from './SettingLabel'
-import BackIcon from './BackIcon'
-import { useStorage } from '@plasmohq/storage/hook'
-import { updateStorage } from '~background'
+import { useStorage } from "@plasmohq/storage/hook"
 
-const SettingDrawer = ({close, setClose}) => {
+import { updateStorage } from "~background"
+
+import BackIcon from "./BackIcon"
+import SettingLabel from "./SettingLabel"
+
+const SettingDrawer = ({ close, setClose }) => {
+  const [problemSets, setProblemSets] = useStorage<string>("problemSets")
   const [difficulty, setDifficulty] = useStorage<string>("difficulty")
   const settingList = [
     {
-      "name": "Problem Sets",
-      "description": "Choose the leetcode problems you'd like",
-      "dropdownProps": {
-        "options": {
-          "all": "All Problems"
+      name: "Problem Sets",
+      description: "Choose the leetcode problems you'd like",
+      dropdownProps: {
+        options: {
+          all: "All Leetcode Problems",
+          allNeetcode: "All Neetcode Problems",
+          NeetCode150: "Neetcode 150",
+          Blind75: "Blind 75"
         },
-        "defaultValue": "all",
-        "handleChange": (e) => {}
+        defaultValue: problemSets,
+        handleChange: (e) => {
+          setProblemSets(e.target.value)
+          updateStorage()
+        }
       }
     },
     {
-      "name": "Problem Difficulty",
-      "description": "Choose the leetcode difficulty you'd like",
-      "dropdownProps": {
-        "options": {
-          "all": "All difficulty",
-          "EASY": "Easy",
-          "MEDIUM": "Medium",
-          "HARD": "Hard"
+      name: "Problem Difficulty",
+      description: "Choose the leetcode difficulty you'd like",
+      dropdownProps: {
+        options: {
+          all: "All difficulty",
+          EASY: "Easy",
+          MEDIUM: "Medium",
+          HARD: "Hard"
         },
-        "defaultValue": difficulty,
-        "handleChange": (e) => {
+        defaultValue: difficulty,
+        handleChange: (e) => {
           setDifficulty(e.target.value)
           updateStorage()
         }
       }
     },
     {
-      "name": "Number of problems to solve",
-      "description": "Choose the amount of leetcode problems you'd like to solve before being able to access websites",
-      "inputProps": {
-        "type": "number",
-        "handleChange": (e) => {}
+      name: "Number of problems to solve",
+      description:
+        "Choose the amount of leetcode problems you'd like to solve before being able to access websites",
+      inputProps: {
+        type: "number",
+        handleChange: (e) => {}
       }
-    },
+    }
   ]
   return (
     <div className={["drawer", close ? "" : "opened"].join(" ")}>
@@ -51,12 +61,12 @@ const SettingDrawer = ({close, setClose}) => {
         </button>
         <h1>Settings</h1>
       </nav>
-      <ul className='setting-labels'>
-        {
-          settingList.map((settingProps, key) => <li key={key} >
+      <ul className="setting-labels">
+        {settingList.map((settingProps, key) => (
+          <li key={key}>
             <SettingLabel {...settingProps} />
-          </li>)
-        }
+          </li>
+        ))}
       </ul>
     </div>
   )

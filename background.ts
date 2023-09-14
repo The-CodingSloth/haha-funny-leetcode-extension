@@ -26,8 +26,9 @@ let leetCodeProblem = {
 let lastSubmissionDate = new Date(0)
 
 // Get Problem List from leetcode graphql API
-const getProblemList = async () => {
+const getProblemListFromLeetCodeAPI = async () => {
   const difficulty = await storage.get("difficulty")
+  console.log(difficulty)
   try {
     let reply
     const query = `
@@ -37,7 +38,11 @@ const getProblemList = async () => {
           limit: -1
           skip: 0
           filters: {
-            ${(difficulty && difficulty !== "all") ? "difficulty: " + difficulty : "" }
+            ${
+              difficulty && difficulty !== "all"
+                ? "difficulty: " + difficulty
+                : ""
+            }
           }
         ) {
           questions: data {
@@ -61,37 +66,64 @@ const getProblemList = async () => {
         }
       }
     `
-  
+
     const body = {
       query
     }
-  
-    await fetch('https://leetcode.com/graphql', {method: "POST", body: JSON.stringify(body), headers: {
-      "Content-Type": "application/json",
-    }})
-    .then(response => response.json())
-    .then(response => {
-      reply = response
+
+    await fetch("https://leetcode.com/graphql", {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json"
+      }
     })
+      .then((response) => response.json())
+      .then((response) => {
+        reply = response
+      })
     return reply.data.problemsetQuestionList.questions
   } catch (error) {
     console.log(error.toString())
   }
 }
 
-// TODO: Need to find a way to filter out premium problems
 const generateRandomLeetCodeProblem = async () => {
   try {
-    const leetCodeProblems = await getProblemList()
-    let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
-    while(leetCodeProblems[randomIndex].paidOnly){
-      randomIndex++
-      randomIndex = (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
+    const problemSet = (await storage.get("problemSets")) ?? "all"
+    let leetCodeProblems = []
+    if (problemSet === "all") {
+      leetCodeProblems = await getProblemListFromLeetCodeAPI()
+      let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+      while (leetCodeProblems[randomIndex].paidOnly) {
+        randomIndex++
+        randomIndex =
+          (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
+      }
+      const randomProblem = leetCodeProblems[randomIndex]
+      const randomProblemURL =
+        "https://leetcode.com/problems/" +
+        randomProblem.title.replace(/ /g, "-").toLowerCase() +
+        "/"
+      const randomProblemName = randomProblem.title
+      return { randomProblemURL, randomProblemName }
+    } else {
+      // TODO: Need to find a way to filter out premium problems for these JSON files
+      const problemSetURLs = {
+        allNeetcode: "leetcode-problems/allProblems.json",
+        NeetCode150: "leetcode-problems/neetCode150Problems.json",
+        Blind75: "leetcode-problems/blind75Problems.json"
+      }
+      const res = await fetch(chrome.runtime.getURL(problemSetURLs[problemSet]))
+
+      leetCodeProblems = await res.json()
+
+      const randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+      const randomProblem = leetCodeProblems[randomIndex]
+      const randomProblemURL = randomProblem.href
+      const randomProblemName = randomProblem.text
+      return { randomProblemURL, randomProblemName }
     }
-    const randomProblem = leetCodeProblems[randomIndex]
-    const randomProblemURL = "https://leetcode.com/problems/" + randomProblem.title.replace(/ /g, "-").toLowerCase() + "/"
-    const randomProblemName = randomProblem.title
-    return { randomProblemURL, randomProblemName }
   } catch (error) {
     console.error("Error generating random problem", error)
     return undefined
@@ -203,16 +235,18 @@ const checkIfUserSolvedProblem = async (details) => {
 
 // Check if a streak should be updated. Should only be called when a problem has been completed.
 async function updateStreak() {
-  const lastCompletedString = await storage.get('lastCompleted')
-  const lastCompleted = lastCompletedString ? new Date(lastCompletedString) : new Date(0)
-  const now = new Date();
+  const lastCompletedString = await storage.get("lastCompleted")
+  const lastCompleted = lastCompletedString
+    ? new Date(lastCompletedString)
+    : new Date(0)
+  const now = new Date()
 
   if (lastCompleted.toDateString() === now.toDateString()) return
 
   // This is the first problem that was solved today
-  const currentStreak: number = await storage.get('currentStreak') ?? 0
-  const bestStreak: number = await storage.get('bestStreak') ?? 0
-  const newStreak = currentStreak + 1;
+  const currentStreak: number = (await storage.get("currentStreak")) ?? 0
+  const bestStreak: number = (await storage.get("bestStreak")) ?? 0
+  const newStreak = currentStreak + 1
 
   // Update streak
   await storage.set("currentStreak", newStreak)
@@ -222,10 +256,12 @@ async function updateStreak() {
 
 // Check if a streak should be reset. Should be called when extension starts up and peridically.
 async function checkResetStreak() {
-  const lastCompletedString = await storage.get('lastCompleted')
-  const lastCompleted = lastCompletedString ? new Date(lastCompletedString) : new Date(0) // Returns Unix Epoch if item is null
-  const now = new Date();
-  const yesterday = now.getDate() - 1;
+  const lastCompletedString = await storage.get("lastCompleted")
+  const lastCompleted = lastCompletedString
+    ? new Date(lastCompletedString)
+    : new Date(0) // Returns Unix Epoch if item is null
+  const now = new Date()
+  const yesterday = now.getDate() - 1
 
   if (lastCompleted.getDate() < yesterday) {
     await storage.set("currentStreak", 0)
@@ -258,10 +294,9 @@ chrome.alarms.get("midnightAlarm", (alarm) => {
 
 // Update the storage and check if streak should be reset when the alarm is fired
 chrome.alarms.onAlarm.addListener(async () => {
-  updateStorage();
-  checkResetStreak();
-});
-
+  updateStorage()
+  checkResetStreak()
+})
 
 chrome.runtime.onMessage.addListener(onMessageReceived)
 chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {

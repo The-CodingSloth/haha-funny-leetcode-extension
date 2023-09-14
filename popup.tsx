@@ -1,10 +1,11 @@
 import "styles.css"
-import SettingsIcon from "~components/SettingsIcon"
-import { useStorage } from "@plasmohq/storage/hook"
-import { useEffect, useState } from "react"
-import { updateStorage } from "~background"
 
 import SettingDrawer from "components/SettingDrawer"
+import { useEffect, useState } from "react"
+
+import { useStorage } from "@plasmohq/storage/hook"
+
+import SettingsIcon from "~components/SettingsIcon"
 
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html
@@ -29,7 +30,7 @@ const IndexPopup = () => {
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
   const [drawerClosed, setDrawerClosed] = useState(true)
-  
+
   useEffect(() => {
     const randomUnsolvedIndex = Math.floor(
       Math.random() * possibleUnSolvedMessages.length
@@ -37,11 +38,10 @@ const IndexPopup = () => {
     const randomSolvedIndex = Math.floor(
       Math.random() * possibleSolvedMessages.length
     )
-    
+
     setRandomSolvedMessage(possibleSolvedMessages[randomSolvedIndex])
     setRandomUnsolvedMessage(possibleUnSolvedMessages[randomUnsolvedIndex])
   }, [])
-
 
   return (
     <div>
