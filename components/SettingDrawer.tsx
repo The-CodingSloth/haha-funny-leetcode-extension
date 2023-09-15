@@ -31,7 +31,7 @@ const SettingDrawer = ({ close, setClose }) => {
       description: "Choose the leetcode difficulty you'd like",
       dropdownProps: {
         options: {
-          all: "All difficulty",
+          all: "All difficulties",
           EASY: "Easy",
           MEDIUM: "Medium",
           HARD: "Hard"
