@@ -118,7 +118,11 @@ const generateRandomLeetCodeProblem = async () => {
 
       leetCodeProblems = await res.json()
 
-      const randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+      let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
+      // If the problem is premium, then skip it and go to the next problem until you find a non-premium problem
+      while (leetCodeProblems[randomIndex].isPremium) {
+        randomIndex++
+      }
       const randomProblem = leetCodeProblems[randomIndex]
       const randomProblemURL = randomProblem.href
       const randomProblemName = randomProblem.text
