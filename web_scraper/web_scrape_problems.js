@@ -68,17 +68,35 @@ const scrapeProblemsFromTab = async (page, tabIndex) => {
   )
   await tabLinks[tabIndex].click()
   await page.waitForTimeout(3000)
-
   // Extract problem details
-  const problems = await page.$$eval(
-    "tr.ng-star-inserted td a.table-text",
-    (anchors) => {
-      return anchors.map((anchor) => ({
-        href: anchor.href,
-        text: anchor.textContent.trim()
-      }))
-    }
-  )
+  const problems = await await page.$$eval("tr.ng-star-inserted", (rows) => {
+    return rows.map((row) => {
+      const anchor = row.querySelector("td a.table-text")
+      const isPremium = row.querySelector(
+        "td a.has-tooltip-bottom.ng-star-inserted"
+      )
+      const difficultyElement = row.querySelector("td.diff-col b")
+      const container = row.closest(".accordion-container")
+      const categoryElement = container
+        ? container.querySelector(
+            "button.flex-container-row.accordion.button.is-fullwidth.active p"
+          )
+        : null
+      const category = categoryElement
+        ? categoryElement.textContent.trim()
+        : null
+      return {
+        category: category,
+        href: anchor ? anchor.href : null,
+        text: anchor ? anchor.textContent.trim() : null,
+        // In the future we could use the lintcode url as well, not sure
+        difficulty: difficultyElement
+          ? difficultyElement.textContent.trim()
+          : null,
+        isPremium: isPremium ? true : false
+      }
+    })
+  })
   return problems
 }
 
@@ -89,15 +107,15 @@ const scrapeProblemsFromTab = async (page, tabIndex) => {
 
 //Adding scrapeCategories to each function to ensure that the categories are scraped
 const scrapeBlind75Problems = async (page) => {
-  return await scrapeProblemsFromTab(page, 0)
-}
-
-const scrapeNeetCode150Problems = async (page) => {
   return await scrapeProblemsFromTab(page, 1)
 }
 
-const scrapeAllProblems = async (page) => {
+const scrapeNeetCode150Problems = async (page) => {
   return await scrapeProblemsFromTab(page, 2)
+}
+
+const scrapeAllProblems = async (page) => {
+  return await scrapeProblemsFromTab(page, 3)
 }
 
 const saveProblemstoJSON = (filename, dirLocation, data) => {
