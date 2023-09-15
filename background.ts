@@ -26,9 +26,7 @@ let leetCodeProblem = {
 let lastSubmissionDate = new Date(0)
 
 // Get Problem List from leetcode graphql API
-const getProblemListFromLeetCodeAPI = async () => {
-  const difficulty = await storage.get("difficulty")
-  console.log(difficulty)
+const getProblemListFromLeetCodeAPI = async (difficulty) => {
   try {
     let reply
     const query = `
@@ -91,9 +89,10 @@ const getProblemListFromLeetCodeAPI = async () => {
 const generateRandomLeetCodeProblem = async () => {
   try {
     const problemSet = (await storage.get("problemSets")) ?? "all"
+    const difficulty = (await storage.get("difficulty")) ?? "all"
     let leetCodeProblems = []
     if (problemSet === "all") {
-      leetCodeProblems = await getProblemListFromLeetCodeAPI()
+      leetCodeProblems = await getProblemListFromLeetCodeAPI(difficulty)
       let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
       while (leetCodeProblems[randomIndex].paidOnly) {
         randomIndex++
@@ -115,8 +114,12 @@ const generateRandomLeetCodeProblem = async () => {
         Blind75: "leetcode-problems/blind75Problems.json"
       }
       const res = await fetch(chrome.runtime.getURL(problemSetURLs[problemSet]))
-
       leetCodeProblems = await res.json()
+      if (difficulty !== "all") {
+        leetCodeProblems = leetCodeProblems.filter((problem) => {
+          return problem.difficulty.toLowerCase() === difficulty.toLowerCase()
+        })
+      }
 
       let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
       // If the problem is premium, then skip it and go to the next problem until you find a non-premium problem
