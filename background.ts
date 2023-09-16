@@ -10,9 +10,9 @@ const isLeetCodeUrl = (url: string) => url.includes(LEETCODE_URL)
 const isSubmissionSuccessURL = (url: string) =>
   url.includes("/submissions/detail/") && url.includes("/check/")
 
-const sendUserSolvedMessage = () => {
+const sendUserSolvedMessage = (languageUsed:string) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, { action: "userSolvedProblem" })
+    chrome.tabs.sendMessage(tabs[0].id, { action: "userSolvedProblem", language: languageUsed })
   })
 }
 
@@ -273,7 +273,7 @@ const checkIfUserSolvedProblem = async (details) => {
         })
         await storage.set("leetCodeProblemSolved", true)
         chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
-        sendUserSolvedMessage()
+        sendUserSolvedMessage(data?.lang)
       }
     } catch (error) {
       console.error("Error:", error)

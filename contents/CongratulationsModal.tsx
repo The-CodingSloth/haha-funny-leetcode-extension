@@ -1,6 +1,7 @@
 import styleText from "data-text:./modal.css"
 import type { PlasmoCSConfig } from "plasmo"
 import React, { useEffect, useState } from "react"
+import {messages} from "../constants"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://leetcode.com/*"]
@@ -14,6 +15,7 @@ export const getStyle = () => {
 
 const CongratulationsModal = () => {
   const [showModal, setShowModal] = useState(false)
+  const [language, setLanguage] = useState("")
 
   useEffect(() => {
     const handleClick = (event: any) => {
@@ -27,6 +29,7 @@ const CongratulationsModal = () => {
     const handleMessage = (message: any, sender: any, sendResponse: any) => {
       if (message.action === "userSolvedProblem") {
         setShowModal(true)
+        setLanguage(message.language)
       }
     }
 
@@ -48,6 +51,7 @@ const CongratulationsModal = () => {
       <div className="modal-background">
         <div className="modal-content">
           <h1>Congratulations! You've solved the problem!</h1>
+          <h3>{messages[language].message}</h3>
           <button
             className="close-modal-button"
             onClick={() => setShowModal(false)}>
