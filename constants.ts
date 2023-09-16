@@ -13,7 +13,7 @@ export const messages = {
     },
     rust: {
       language: "rust",
-      message: "Why would you use that for leecode?",
+      message: "Why would you use that for leetcode?",
     },
     c:{
       language: "c",
