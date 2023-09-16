@@ -168,27 +168,32 @@ const onMessageReceived = (message, sender, sendResponse) => {
 }
 
 async function setRedirectRule(newRedirectUrl: string) {
-  let newRedirectRule: chrome.declarativeNetRequest.Rule = {
+  // Can't use built in chrome types for firefox
+  let newRedirectRule = {
     id: RULE_ID,
     priority: 1,
     action: {
-      type: chrome.declarativeNetRequest.RuleActionType.REDIRECT,
+      type: "redirect",
       redirect: { url: newRedirectUrl }
     },
     condition: {
       urlFilter: "*://*/*",
-      excludedDomains: [
+      // Modify this if we want to exclude more specific domains (redirect won't apply to them)
+      excludedInitiatorDomains: [
         "leetcode.com",
         "www.leetcode.com",
         "developer.chrome.com"
       ],
-      resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME]
+
+      resourceTypes: ["main_frame"]
     }
   }
 
   try {
     chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: [RULE_ID],
+      // Type error for addRules, but it works
+      // @ts-ignore
       addRules: [newRedirectRule]
     })
     console.log("Redirect rule updated")
