@@ -44,7 +44,7 @@ LeetCode Torture is an extension designed to make you productive to ace those te
 #### To get the extension working properly right now on Firefox
 
 - Go to leetcode.com and right click the extension, and give the extension permission
-- Do the same for any websites you visit (FIrefox, doesn't give permissions automatically like chrome which is why we have to do this, it's annoying)
+- Do the same for any websites you visit (Firefox, doesn't give permissions automatically like chrome which is why we have to do this, it's annoying)
 
 ## FAQ
 
