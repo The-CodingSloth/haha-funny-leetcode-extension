@@ -8,6 +8,7 @@ import SettingLabel from "./SettingLabel"
 const SettingDrawer = ({ close, setClose }) => {
   const [problemSets, setProblemSets] = useStorage<string>("problemSets")
   const [difficulty, setDifficulty] = useStorage<string>("difficulty")
+  const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
   const settingList = [
     {
       name: "Problem Sets",
@@ -22,7 +23,7 @@ const SettingDrawer = ({ close, setClose }) => {
         defaultValue: problemSets,
         handleChange: (e) => {
           setProblemSets(e.target.value)
-          updateStorage()
+          !leetcodeProblemSolved ? updateStorage() : null
         }
       }
     },
@@ -39,10 +40,11 @@ const SettingDrawer = ({ close, setClose }) => {
         defaultValue: difficulty,
         handleChange: (e) => {
           setDifficulty(e.target.value)
-          updateStorage()
+          !leetcodeProblemSolved ? updateStorage() : null
         }
       }
-    },
+    }
+    /* TODO: Add this feature later
     {
       name: "Number of problems to solve",
       description:
@@ -52,6 +54,7 @@ const SettingDrawer = ({ close, setClose }) => {
         handleChange: (e) => {}
       }
     }
+    */
   ]
   return (
     <div className={["drawer", close ? "" : "opened"].join(" ")}>
@@ -62,6 +65,12 @@ const SettingDrawer = ({ close, setClose }) => {
         <h1>Settings</h1>
       </nav>
       <ul className="setting-labels">
+        {leetcodeProblemSolved && (
+          <p className="settings-problem-solved">
+            Congrats you solved your problem today, these settings will be
+            applied tomorrow
+          </p>
+        )}
         {settingList.map((settingProps, key) => (
           <li key={key}>
             <SettingLabel {...settingProps} />

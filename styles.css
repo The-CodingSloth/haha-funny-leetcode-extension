@@ -3,16 +3,22 @@
   padding: 0;
 }
 body {
-  width: 25rem;
-  height: 15.5rem;
   color: white;
   /* Adjusted for better visibility */
   /* box-shadow: 0px 5px 20px 2px rgb(0 0 0 / 0.35);  */
   background-color: rgb(21, 21, 30);
 }
-
-nav{
-  background-color: #4F46E5;
+.popup {
+  width: 25rem;
+  height: 15.5rem;
+  transition: all 0.3s ease-in-out;
+}
+.popup.settings {
+  width: 25rem;
+  height: 25rem;
+}
+nav {
+  background-color: #4f46e5;
   height: 2em;
   display: flex;
   flex-direction: row;
@@ -21,7 +27,7 @@ nav{
   padding: 0.5em;
 }
 
-nav h1{
+nav h1 {
   font-size: 1.5em;
   padding: 0;
   margin: 0;
@@ -29,7 +35,7 @@ nav h1{
   font-weight: 500;
 }
 
-nav button{
+nav button {
   font-size: 16px;
   outline: 0;
   border: 0;
@@ -41,7 +47,7 @@ nav button{
   cursor: pointer;
 }
 
-nav .flex{
+nav .flex {
   flex: 1;
 }
 
@@ -106,7 +112,7 @@ input[type="number"]::-webkit-outer-spin-button {
   background-color: #3c34b5;
 }
 
-#difficulty-selection{
+#difficulty-selection {
   display: flex;
   font-size: 1.2em;
   flex-direction: row;
@@ -115,11 +121,11 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 1em auto 0 auto;
 }
 
-#difficulty-selection p{
+#difficulty-selection p {
   padding-right: 1em;
 }
 
-#difficulty-selection select{
+#difficulty-selection select {
   background-color: transparent;
   border: 1px solid gray;
   padding: 0.5em;
@@ -130,19 +136,49 @@ input[type="number"]::-webkit-outer-spin-button {
   cursor: pointer;
 }
 
-#difficulty-selection select:hover{
+#difficulty-selection select:hover {
   outline: 1px solid #ffffff80;
 }
 
-#difficulty-selection select option{
+#difficulty-selection select option {
   color: black;
 }
-#current-streak-message, #best-streak-message {
+#current-streak-message,
+#best-streak-message {
   font-size: 1.1rem;
   text-align: center;
   padding: 0.5rem;
 }
 
+.loader {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #fff;
+  border-bottom-color: #4f46e5;
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+.loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 50%;
+  font-size: 1.2rem;
+  font-weight: 700;
+  gap: 1rem;
+}
 .drawer {
   position: fixed;
   top: 0;
@@ -157,40 +193,45 @@ input[type="number"]::-webkit-outer-spin-button {
   right: 0;
 }
 
-.drawer .setting-labels{
-  background-color: #15151E;
+.drawer .setting-labels {
+  background-color: #15151e;
   height: 100%;
   font-size: 1em;
   padding: 1em;
   list-style: none;
 }
 
-.setting-label{
+.setting-label {
   display: flex;
   flex-direction: row;
   align-items: top;
 }
 
-.setting-labels li:nth-of-type(n+2){
-  padding-top: 1em;
+.setting-labels li:nth-of-type(n + 2) {
+  padding-top: 1rem;
 }
 
-.setting-label p.name{
+.setting-labels .settings-problem-solved {
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 0 1rem 1.5rem 1rem;
+  font-weight: 700;
+}
+.setting-label p.name {
   font-size: 1.4em;
   font-weight: 700;
   padding-bottom: 0.2em;
 }
-
-.setting-label p.description{
+.setting-label p.description {
   font-weight: 700;
-  color: #AFAAAA;
+  color: #afaaaa;
 }
 
-.setting-label .setting-text{
+.setting-label .setting-text {
   flex: 1;
 }
 
-.setting-label .setting-dropdown{
+.setting-label .setting-dropdown {
   background-color: transparent;
   color: #ffffff;
   outline: 0;
@@ -200,11 +241,11 @@ input[type="number"]::-webkit-outer-spin-button {
   cursor: pointer;
 }
 
-.setting-label .setting-dropdown option{
-  background-color: #4F46E5;
+.setting-label .setting-dropdown option {
+  background-color: #4f46e5;
 }
 
-.setting-label .setting-input{
+.setting-label .setting-input {
   height: 1.3em;
   padding: 0.2em;
   width: 8em;

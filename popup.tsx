@@ -30,7 +30,7 @@ const IndexPopup = () => {
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
   const [drawerClosed, setDrawerClosed] = useState(true)
-
+  const [loading, setLoading] = useStorage<boolean>("loading", true)
   useEffect(() => {
     const randomUnsolvedIndex = Math.floor(
       Math.random() * possibleUnSolvedMessages.length
@@ -38,38 +38,58 @@ const IndexPopup = () => {
     const randomSolvedIndex = Math.floor(
       Math.random() * possibleSolvedMessages.length
     )
-
     setRandomSolvedMessage(possibleSolvedMessages[randomSolvedIndex])
     setRandomUnsolvedMessage(possibleUnSolvedMessages[randomUnsolvedIndex])
+    // Makes sure the loading screen isn't stuck on for initial render
+    let timer
+    if (loading) {
+      timer = setTimeout(() => {
+        setLoading(false)
+      }, 100)
+    }
+    return () => {
+      clearTimeout(timer)
+    }
   }, [])
 
   return (
-    <div>
+    <div className={drawerClosed ? "popup" : "popup settings"}>
       <nav>
         <h1 className="flex">Welcome to the LeetCode Gulag</h1>
         <button onClick={() => setDrawerClosed(!drawerClosed)}>
           <SettingsIcon />
         </button>
       </nav>
-      {!leetcodeProblemSolved ? (
-        <>
-          <h2 id="unsolved-message">{randomUnsolvedMessage}</h2>
 
-          <div className="leetcode-info">
-            <p className="question-of-day-msg">Today's Question</p>
-            <p id="leetcode-problem-name">{problemName}</p>
-            <button
-              id="leetcode-problem-button"
-              onClick={() => chrome.tabs.create({ url: problemURL })}>
-              Solve it
-            </button>
-          </div>
-        </>
+      {loading || !problemName ? (
+        <div className="loading">
+          <p>Fetching torture problem...</p>
+          <span className="loader"></span>
+        </div>
       ) : (
-        <h2 id="solved-message">{randomSolvedMessage}</h2>
+        <>
+          {!leetcodeProblemSolved ? (
+            <>
+              <h2 id="unsolved-message">{randomUnsolvedMessage}</h2>
+              <div className="leetcode-info">
+                <p className="question-of-day-msg">Today's Question</p>
+                <p id="leetcode-problem-name">{problemName}</p>
+                <button
+                  id="leetcode-problem-button"
+                  onClick={() => chrome.tabs.create({ url: problemURL })}>
+                  Solve it
+                </button>
+              </div>
+            </>
+          ) : (
+            <h2 id="solved-message">{randomSolvedMessage}</h2>
+          )}
+          <h2 id="current-streak-message">
+            Current Streak: {currentStreak ?? 0}
+          </h2>
+          <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
+        </>
       )}
-      <h2 id="current-streak-message">Current Streak: {currentStreak ?? 0}</h2>
-      <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
       <SettingDrawer close={drawerClosed} setClose={setDrawerClosed} />
     </div>
   )

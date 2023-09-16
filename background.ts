@@ -92,6 +92,7 @@ const generateRandomLeetCodeProblem = async () => {
     const difficulty = (await storage.get("difficulty")) ?? "all"
     let leetCodeProblems = []
     if (problemSet === "all") {
+      await storage.set("loading", true)
       leetCodeProblems = await getProblemListFromLeetCodeAPI(difficulty)
       let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
       while (leetCodeProblems[randomIndex].paidOnly) {
@@ -105,6 +106,7 @@ const generateRandomLeetCodeProblem = async () => {
         randomProblem.title.replace(/ /g, "-").toLowerCase() +
         "/"
       const randomProblemName = randomProblem.title
+      await storage.set("loading", false)
       return { randomProblemURL, randomProblemName }
     } else {
       // TODO: Need to find a way to filter out premium problems for these JSON files
@@ -134,18 +136,29 @@ const generateRandomLeetCodeProblem = async () => {
   } catch (error) {
     console.error("Error generating random problem", error)
     return undefined
+  } finally {
+    await storage.set("loading", false)
   }
 }
 
 // Communication functions between background.js, popup.js, and content.js
 const onMessageReceived = (message, sender, sendResponse) => {
   switch (message.action) {
+    case "fetchingProblem":
+      // Handle the start of the problem fetch.
+      // Currently, we'll just log it for clarity, but you can add other logic here if needed.
+      console.log("Fetching problem started.")
+      break
+    case "problemFetched":
+      // Handle the end of the problem fetch.
+      console.log("Fetching problem completed.")
+      break
     case "getProblemStatus":
       sendResponse({
         problemSolved: leetcodeProblemSolved,
         problem: leetCodeProblem
       })
-      break
+      return true
     case "userClickedSubmit":
       lastSubmissionDate = new Date()
       break
@@ -185,6 +198,7 @@ async function setRedirectRule(newRedirectUrl: string) {
 }
 export const updateStorage = async () => {
   const result = await generateRandomLeetCodeProblem()
+
   if (!result) {
     throw new Error("Error generating random problem")
   } else {
@@ -206,40 +220,68 @@ export const updateStorage = async () => {
 }
 // Checks if a request is currently happening. In order to not make another request (prevents infinite loop)
 let scriptInitiatedRequest = false
-
+//let lastCheckedUrl = ""
+//let lastCheckedTimestamp = 0
+//const debounceTime = 1000 // 1 second (for the future possibly)
 const checkIfUserSolvedProblem = async (details) => {
-  if (scriptInitiatedRequest) {
-    scriptInitiatedRequest = false
+  //const now = Date.now()
+
+  // Get the current active tab's URL
+  let currentURL = ""
+  try {
+    const [activeTab] = await new Promise<chrome.tabs.Tab[]>((resolve) => {
+      chrome.tabs.query({ active: true, currentWindow: true }, resolve)
+    })
+
+    currentURL = activeTab.url
+  } catch (error) {
+    console.error("Error getting active tab:", error)
     return
   }
-  // Checks if the request has been made within the last 30 seconds (could also be helpful for future features)
-  if (lastSubmissionDate.getTime() + 30000 < Date.now()) return
+
+  const leetCodeURL = await storage.get("problemURL")
+
+  const sameUrl =
+    leetCodeURL === currentURL || leetCodeURL + "description/" === currentURL
+
+  if (
+    !sameUrl || // Checking with the active tab's URL
+    scriptInitiatedRequest
+  ) {
+    return
+  }
+  //lastCheckedUrl = details.url
+  //lastCheckedTimestamp = now
+
   if (isSubmissionSuccessURL(details.url)) {
     try {
       scriptInitiatedRequest = true
       const response = await fetch(details.url)
       const data = await response.json()
 
-      if (data.status_msg === "Accepted" && data.state === "SUCCESS") {
-        console.log("User solved the problem")
-        console.log(
-          "Congratulations! You've solved the problem!, I'll see you tomorrow"
-        )
+      if (
+        data.status_msg === "Accepted" &&
+        data.state === "SUCCESS" &&
+        !data.code_answer
+      ) {
         updateStreak()
+
         leetcodeProblemSolved = true
         // They solved the problem, so no need to redirect anymore they're free, for now
         chrome.declarativeNetRequest.updateDynamicRules({
           removeRuleIds: [RULE_ID] // use RULE_ID constant
         })
         await storage.set("leetCodeProblemSolved", true)
+        chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
         sendUserSolvedMessage()
       }
     } catch (error) {
       console.error("Error:", error)
+    } finally {
+      scriptInitiatedRequest = false
     }
   }
 }
-
 // Check if a streak should be updated. Should only be called when a problem has been completed.
 async function updateStreak() {
   const lastCompletedString = await storage.get("lastCompleted")
@@ -279,6 +321,9 @@ async function checkResetStreak() {
 chrome.runtime.onInstalled.addListener(async () => {
   await updateStorage()
   await checkResetStreak()
+  chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
+    urls: ["*://leetcode.com/submissions/detail/*/check/"]
+  })
 })
 
 // Ensure the alarm is set when the extension starts
@@ -303,9 +348,11 @@ chrome.alarms.get("midnightAlarm", (alarm) => {
 chrome.alarms.onAlarm.addListener(async () => {
   updateStorage()
   checkResetStreak()
+  if (!chrome.webRequest.onCompleted.hasListener(checkIfUserSolvedProblem)) {
+    chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
+      urls: ["*://leetcode.com/submissions/detail/*/check/"]
+    })
+  }
 })
 
 chrome.runtime.onMessage.addListener(onMessageReceived)
-chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
-  urls: ["*://leetcode.com/submissions/detail/*/check/"]
-})
