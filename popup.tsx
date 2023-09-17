@@ -77,7 +77,7 @@ const IndexPopup = () => {
     <div className={drawerClosed ? "popup" : "popup settings"}>
       <nav>
         <h1 className="flex">Welcome to the LeetCode Gulag</h1>
-        <button onClick={() => setDrawerClosed(!drawerClosed)}>
+        <button hidden={loading} onClick={() => setDrawerClosed(!drawerClosed)}>
           <SettingsIcon />
         </button>
       </nav>

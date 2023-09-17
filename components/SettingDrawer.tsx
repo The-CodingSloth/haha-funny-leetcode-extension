@@ -21,9 +21,9 @@ const SettingDrawer = ({ close, setClose }) => {
           Blind75: "Blind 75"
         },
         defaultValue: problemSets,
-        handleChange: (e) => {
+        handleChange: async (e) => {
           setProblemSets(e.target.value)
-          !leetcodeProblemSolved ? updateStorage() : null
+          !leetcodeProblemSolved ? await updateStorage() : null
         }
       }
     },
@@ -38,9 +38,9 @@ const SettingDrawer = ({ close, setClose }) => {
           HARD: "Hard"
         },
         defaultValue: difficulty,
-        handleChange: (e) => {
+        handleChange: async (e) => {
           setDifficulty(e.target.value)
-          !leetcodeProblemSolved ? updateStorage() : null
+          !leetcodeProblemSolved ? await updateStorage() : null
         }
       }
     }
