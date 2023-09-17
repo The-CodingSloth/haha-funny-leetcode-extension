@@ -1,6 +1,7 @@
 * {
   margin: 0;
   padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
 }
 body {
   color: white;
@@ -10,25 +11,26 @@ body {
 }
 .popup {
   width: 25rem;
-  height: 15.5rem;
+  min-height: 20rem;
   transition: all 0.3s ease-in-out;
+  overflow: hidden;
 }
 .popup.settings {
   width: 25rem;
-  height: 25rem;
+  min-height: 25rem;
 }
 nav {
   background-color: #4f46e5;
   height: 2em;
   display: flex;
   flex-direction: row;
-  gap: 1em;
+  gap: 0.2rem;
   align-items: center;
-  padding: 0.5em;
+  padding: 0.5rem;
 }
 
 nav h1 {
-  font-size: 1.5em;
+  font-size: 1.2rem;
   padding: 0;
   margin: 0;
   line-height: 1em;
@@ -174,7 +176,8 @@ input[type="number"]::-webkit-outer-spin-button {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 50%;
+  padding: 2rem 0 2rem 0;
+  height: 100%;
   font-size: 1.2rem;
   font-weight: 700;
   gap: 1rem;
@@ -197,7 +200,7 @@ input[type="number"]::-webkit-outer-spin-button {
   background-color: #15151e;
   height: 100%;
   font-size: 1em;
-  padding: 1em;
+  padding: 1rem;
   list-style: none;
 }
 
@@ -218,12 +221,13 @@ input[type="number"]::-webkit-outer-spin-button {
   font-weight: 700;
 }
 .setting-label p.name {
-  font-size: 1.4em;
+  font-size: 1rem;
   font-weight: 700;
   padding-bottom: 0.2em;
 }
 .setting-label p.description {
   font-weight: 700;
+  font-size: 0.8rem;
   color: #afaaaa;
 }
 
@@ -236,7 +240,7 @@ input[type="number"]::-webkit-outer-spin-button {
   color: #ffffff;
   outline: 0;
   border: 0;
-  font-size: 1.4em;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
 }
@@ -249,4 +253,16 @@ input[type="number"]::-webkit-outer-spin-button {
   height: 1.3em;
   padding: 0.2em;
   width: 8em;
+}
+
+.permissions-warning {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 1rem;
+  font-weight: 700;
 }
