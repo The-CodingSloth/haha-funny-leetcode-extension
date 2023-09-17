@@ -236,11 +236,14 @@ export const updateStorage = async () => {
 }
 // Checks if a request is currently happening. In order to not make another request (prevents infinite loop)
 let scriptInitiatedRequest = false
-//let lastCheckedUrl = ""
-//let lastCheckedTimestamp = 0
-//const debounceTime = 1000 // 1 second (for the future possibly)
+let lastCheckedUrl = ""
+let lastCheckedTimestamp = 0
+const debounceTime = 500 // 500 miliseconds (for the future possibly)
 const checkIfUserSolvedProblem = async (details) => {
-  //const now = Date.now()
+  const now = Date.now()
+  console.log(
+    "oh so you're a developer huh, nice check this out and see if there's any errors"
+  )
 
   // Get the current active tab's URL
   let currentURL = ""
@@ -262,24 +265,33 @@ const checkIfUserSolvedProblem = async (details) => {
 
   if (
     !sameUrl || // Checking with the active tab's URL
-    scriptInitiatedRequest
+    scriptInitiatedRequest ||
+    (now - lastCheckedTimestamp < debounceTime &&
+      details.url === lastCheckedUrl)
   ) {
     return
   }
-  //lastCheckedUrl = details.url
-  //lastCheckedTimestamp = now
+  console.log("Checking now if it's a success submission URL")
+  lastCheckedUrl = details.url
+  lastCheckedTimestamp = now
 
   if (isSubmissionSuccessURL(details.url)) {
     try {
       scriptInitiatedRequest = true
       const response = await fetch(details.url)
       const data = await response.json()
+      if (data.state === "STARTED") {
+        console.log("Started state, returning")
+        return
+      }
+      console.log("Checking if state is success")
 
       if (
         data.status_msg === "Accepted" &&
         data.state === "SUCCESS" &&
         !data.code_answer
       ) {
+        console.log("It is a success submission, user solved problem")
         updateStreak()
 
         leetcodeProblemSolved = true
@@ -288,8 +300,9 @@ const checkIfUserSolvedProblem = async (details) => {
           removeRuleIds: [RULE_ID] // use RULE_ID constant
         })
         await storage.set("leetCodeProblemSolved", true)
-        chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
+        //chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
         sendUserSolvedMessage(data?.lang)
+        console.log("User solved problem, should've gotten the success message")
       }
     } catch (error) {
       console.error("Error:", error)

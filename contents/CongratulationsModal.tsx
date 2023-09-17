@@ -1,7 +1,8 @@
 import styleText from "data-text:./modal.css"
 import type { PlasmoCSConfig } from "plasmo"
 import React, { useEffect, useState } from "react"
-import {messages} from "../constants"
+
+import { messages } from "../constants"
 
 export const config: PlasmoCSConfig = {
   matches: ["https://leetcode.com/*"]
