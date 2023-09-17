@@ -7,6 +7,8 @@ import { useStorage } from "@plasmohq/storage/hook"
 
 import SettingsIcon from "~components/SettingsIcon"
 
+import { updateStorage } from "./background"
+
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html
   const possibleUnSolvedMessages = [
@@ -31,6 +33,8 @@ const IndexPopup = () => {
   const [bestStreak] = useStorage<number>("bestStreak")
   const [drawerClosed, setDrawerClosed] = useState(true)
   const [loading, setLoading] = useStorage<boolean>("loading", true)
+  const [permissionsEnabled] = useStorage<boolean>("permissionsEnabled", true)
+  const [checkingPermissions, setCheckingPermissions] = useState(false)
   useEffect(() => {
     const randomUnsolvedIndex = Math.floor(
       Math.random() * possibleUnSolvedMessages.length
@@ -47,11 +51,28 @@ const IndexPopup = () => {
         setLoading(false)
       }, 100)
     }
+    // everytime the popup is opened without permissions, we'll check with this function.
+    // If the permissions are not enabled, this will check if they did
+    // If permissions are enabled, this will do nothing
+    if (!permissionsEnabled) {
+      const checkPermissions = async () => {
+        try {
+          setCheckingPermissions(true)
+          await updateStorage()
+          console.log("done checking permissions")
+          setCheckingPermissions(false)
+        } catch (e) {
+          console.log("error checking permissions", e)
+          setCheckingPermissions(false)
+        }
+      }
+      checkPermissions()
+    }
     return () => {
       clearTimeout(timer)
     }
-  }, [])
-
+  }, [permissionsEnabled])
+  const isFirefox = navigator.userAgent.includes("Firefox")
   return (
     <div className={drawerClosed ? "popup" : "popup settings"}>
       <nav>
@@ -61,35 +82,75 @@ const IndexPopup = () => {
         </button>
       </nav>
 
-      {loading || !problemName ? (
-        <div className="loading">
-          <p>Fetching torture problem...</p>
-          <span className="loader"></span>
-        </div>
+      {permissionsEnabled ? (
+        loading || !problemName ? (
+          <div className="loading">
+            <p>Fetching torture problem...</p>
+            <span className="loader"></span>
+          </div>
+        ) : (
+          <>
+            {!leetcodeProblemSolved ? (
+              <>
+                <h2 id="unsolved-message">{randomUnsolvedMessage}</h2>
+                <div className="leetcode-info">
+                  <p className="question-of-day-msg">Today's Question</p>
+                  <p id="leetcode-problem-name">{problemName}</p>
+                  <button
+                    id="leetcode-problem-button"
+                    onClick={() => chrome.tabs.create({ url: problemURL })}>
+                    Solve it
+                  </button>
+                </div>
+              </>
+            ) : (
+              <h2 id="solved-message">{randomSolvedMessage}</h2>
+            )}
+            <h2 id="current-streak-message">
+              Current Streak: {currentStreak ?? 0}
+            </h2>
+            <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
+          </>
+        )
       ) : (
-        <>
-          {!leetcodeProblemSolved ? (
+        <div className="permissions-warning">
+          {checkingPermissions ? (
             <>
-              <h2 id="unsolved-message">{randomUnsolvedMessage}</h2>
-              <div className="leetcode-info">
-                <p className="question-of-day-msg">Today's Question</p>
-                <p id="leetcode-problem-name">{problemName}</p>
-                <button
-                  id="leetcode-problem-button"
-                  onClick={() => chrome.tabs.create({ url: problemURL })}>
-                  Solve it
-                </button>
-              </div>
+              <p>Checking permissions...</p>
+              {/* You can include a spinner or some loading indication here if you want */}
+              <span className="loader"></span>
             </>
           ) : (
-            <h2 id="solved-message">{randomSolvedMessage}</h2>
+            <>
+              <p>Permissions are not enabled for this extension.</p>
+
+              {isFirefox ? (
+                <>
+                  <p>
+                    To do this, right click the extension and select manage
+                    extension.
+                  </p>
+                  <p>
+                    Then navigate to the permissions tab and enable the optional
+                    permissions.
+                  </p>
+                  <p>
+                    It will say "Access your data for all websites" but it is
+                    only used for redirecting you to the problem page and
+                    getting the leetcode problem. I Promise.
+                  </p>
+                </>
+              ) : (
+                <p>
+                  Please navigate to the extensions page of your browser, locate
+                  this extension, and enable the required permissions.
+                </p>
+              )}
+            </>
           )}
-          <h2 id="current-streak-message">
-            Current Streak: {currentStreak ?? 0}
-          </h2>
-          <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
-        </>
+        </div>
       )}
+
       <SettingDrawer close={drawerClosed} setClose={setDrawerClosed} />
     </div>
   )

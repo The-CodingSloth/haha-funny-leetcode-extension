@@ -10,9 +10,12 @@ const isLeetCodeUrl = (url: string) => url.includes(LEETCODE_URL)
 const isSubmissionSuccessURL = (url: string) =>
   url.includes("/submissions/detail/") && url.includes("/check/")
 
-const sendUserSolvedMessage = (languageUsed:string) => {
+const sendUserSolvedMessage = (languageUsed: string) => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, { action: "userSolvedProblem", language: languageUsed })
+    chrome.tabs.sendMessage(tabs[0].id, {
+      action: "userSolvedProblem",
+      language: languageUsed
+    })
   })
 }
 
@@ -69,20 +72,28 @@ const getProblemListFromLeetCodeAPI = async (difficulty) => {
       query
     }
 
-    await fetch("https://leetcode.com/graphql", {
+    const response = await fetch("https://leetcode.com/graphql", {
       method: "POST",
       body: JSON.stringify(body),
       headers: {
         "Content-Type": "application/json"
       }
     })
-      .then((response) => response.json())
-      .then((response) => {
-        reply = response
-      })
-    return reply.data.problemsetQuestionList.questions
+
+    const responseData = await response.json()
+    await storage.set("permissionsEnabled", true)
+    return responseData.data.problemsetQuestionList.questions
   } catch (error) {
     console.log(error.toString())
+    if (
+      error.message.includes("NetworkError") ||
+      error.message.includes("CORS") ||
+      error.message === "Network response was not ok"
+    ) {
+      console.log("CORS error detected.")
+      await storage.set("permissionsEnabled", false)
+    }
+    return undefined
   }
 }
 
