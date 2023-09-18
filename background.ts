@@ -138,6 +138,9 @@ const generateRandomLeetCodeProblem = async () => {
       // If the problem is premium, then skip it and go to the next problem until you find a non-premium problem
       while (leetCodeProblems[randomIndex].isPremium) {
         randomIndex++
+        // Prevent index from going out of bounds
+        randomIndex =
+          (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
       }
       const randomProblem = leetCodeProblems[randomIndex]
       const randomProblemURL = randomProblem.href
