@@ -18,7 +18,11 @@ const SettingDrawer = ({ close, setClose }) => {
           all: "All Leetcode Problems",
           allNeetcode: "All Neetcode Problems",
           NeetCode150: "Neetcode 150",
-          Blind75: "Blind 75"
+          Blind75: "Blind 75",
+          "lg-5htp6xyg": "LeetCode Curated SQL 70",
+          "lg-79h8rn6": "Top 100 Liked Questions",
+          "lg-wpwgkgt": "Top Interview Questions",
+          "lg-o9exaktc": "Tayomide's Questions",
         },
         defaultValue: problemSets,
         handleChange: async (e) => {
