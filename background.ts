@@ -29,9 +29,8 @@ let leetCodeProblem = {
 let lastSubmissionDate = new Date(0)
 
 // Get Problem List from leetcode graphql API
-const getProblemListFromLeetCodeAPI = async (difficulty) => {
-  try {
-    let reply
+const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
+  try { 
     const query = `
       query problemsetQuestionList {
         problemsetQuestionList: questionList(
@@ -39,11 +38,12 @@ const getProblemListFromLeetCodeAPI = async (difficulty) => {
           limit: -1
           skip: 0
           filters: {
-            ${
-              difficulty && difficulty !== "all"
-                ? "difficulty: " + difficulty
-                : ""
-            }
+            ${(difficulty && difficulty !== "all"
+            ? "difficulty: " + difficulty
+            : "")}
+            ${(problemSet?.length
+            ? "listId: " + '"' + problemSet + '"'
+            : "")}
           }
         ) {
           questions: data {
@@ -102,9 +102,11 @@ const generateRandomLeetCodeProblem = async () => {
     const problemSet = (await storage.get("problemSets")) ?? "all"
     const difficulty = (await storage.get("difficulty")) ?? "all"
     let leetCodeProblems = []
-    if (problemSet === "all") {
+    // Check if list is from Leetcode Graphql or all
+    if (problemSet === "all" || problemSet.startsWith("lg")) {
       await storage.set("loading", true)
-      leetCodeProblems = await getProblemListFromLeetCodeAPI(difficulty)
+      // Remove lg- or all from string for better logic processing
+      leetCodeProblems = await getProblemListFromLeetCodeAPI(difficulty, problemSet?.slice(3) || "")
       let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
       while (leetCodeProblems[randomIndex].paidOnly) {
         randomIndex++
