@@ -30,7 +30,7 @@ let lastSubmissionDate = new Date(0)
 
 // Get Problem List from leetcode graphql API
 const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
-  try { 
+  try {
     const query = `
       query problemsetQuestionList {
         problemsetQuestionList: questionList(
@@ -38,12 +38,12 @@ const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
           limit: -1
           skip: 0
           filters: {
-            ${(difficulty && difficulty !== "all"
-            ? "difficulty: " + difficulty
-            : "")}
-            ${(problemSet?.length
-            ? "listId: " + '"' + problemSet + '"'
-            : "")}
+            ${
+              difficulty && difficulty !== "all"
+                ? "difficulty: " + difficulty
+                : ""
+            }
+            ${problemSet?.length ? "listId: " + '"' + problemSet + '"' : ""}
           }
         ) {
           questions: data {
@@ -106,7 +106,10 @@ const generateRandomLeetCodeProblem = async () => {
     if (problemSet === "all" || problemSet.startsWith("lg")) {
       await storage.set("loading", true)
       // Remove lg- or all from string for better logic processing
-      leetCodeProblems = await getProblemListFromLeetCodeAPI(difficulty, problemSet?.slice(3) || "")
+      leetCodeProblems = await getProblemListFromLeetCodeAPI(
+        difficulty,
+        problemSet?.slice(3) || ""
+      )
       let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
       while (leetCodeProblems[randomIndex].paidOnly) {
         randomIndex++
@@ -241,9 +244,8 @@ export const updateStorage = async () => {
 }
 // Checks if a request is currently happening. In order to not make another request (prevents infinite loop)
 let scriptInitiatedRequest = false
-let lastCheckedUrl = ""
-let lastCheckedTimestamp = 0
-const debounceTime = 500 // 500 miliseconds (for the future possibly)
+//let lastCheckedUrl = ""
+//let lastCheckedTimestamp = 0
 const checkIfUserSolvedProblem = async (details) => {
   const now = Date.now()
   console.log(
@@ -270,15 +272,18 @@ const checkIfUserSolvedProblem = async (details) => {
 
   if (
     !sameUrl || // Checking with the active tab's URL
-    scriptInitiatedRequest ||
-    (now - lastCheckedTimestamp < debounceTime &&
-      details.url === lastCheckedUrl)
+    !chrome.webRequest.onCompleted.hasListener(checkIfUserSolvedProblem)
   ) {
     return
   }
   console.log("Checking now if it's a success submission URL")
-  lastCheckedUrl = details.url
-  lastCheckedTimestamp = now
+  //lastCheckedUrl = details.url
+  //lastCheckedTimestamp = now
+  console.log(details.url)
+  console.log(
+    "is it a success submission URL? should say true",
+    isSubmissionSuccessURL(details.url)
+  )
 
   if (isSubmissionSuccessURL(details.url)) {
     try {
@@ -290,6 +295,9 @@ const checkIfUserSolvedProblem = async (details) => {
         return
       }
       console.log("Checking if state is success")
+      console.log("data.status_msg should be Aceepted:", data.status_msg)
+      console.log("data.state should be SUCCESS", data.state)
+      console.log("data.code_answer should be true", !data.code_answer)
 
       if (
         data.status_msg === "Accepted" &&
@@ -297,7 +305,7 @@ const checkIfUserSolvedProblem = async (details) => {
         !data.code_answer
       ) {
         console.log("It is a success submission, user solved problem")
-        updateStreak()
+        await updateStreak()
 
         leetcodeProblemSolved = true
         // They solved the problem, so no need to redirect anymore they're free, for now
@@ -305,7 +313,7 @@ const checkIfUserSolvedProblem = async (details) => {
           removeRuleIds: [RULE_ID] // use RULE_ID constant
         })
         await storage.set("leetCodeProblemSolved", true)
-        //chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
+        chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
         sendUserSolvedMessage(data?.lang)
         console.log("User solved problem, should've gotten the success message")
       }
