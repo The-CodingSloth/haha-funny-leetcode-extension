@@ -9,6 +9,7 @@ const SettingDrawer = ({ close, setClose }) => {
   const [problemSets, setProblemSets] = useStorage<string>("problemSets")
   const [difficulty, setDifficulty] = useStorage<string>("difficulty")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
+  const [includePremium, setIncludePremium] = useStorage<boolean>("includePremium")
   const settingList = [
     {
       name: "Problem Sets",
@@ -47,7 +48,18 @@ const SettingDrawer = ({ close, setClose }) => {
           !leetcodeProblemSolved ? await updateStorage() : null
         }
       }
-    }
+    },
+    {
+      name: "Include Premium Problems",
+      description: "Toggle whether to include premium problems",
+      checkboxProps: {
+        checked: includePremium ?? false,
+        handleChange: async (e) => {
+          setIncludePremium(e.target.checked)
+          !leetcodeProblemSolved ? await updateStorage() : null
+        }
+      }
+    },
     /* TODO: Add this feature later
     {
       name: "Number of problems to solve",
