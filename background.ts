@@ -102,6 +102,7 @@ const generateRandomLeetCodeProblem = async () => {
   try {
     const problemSet = (await storage.get("problemSets")) ?? "all"
     const difficulty = (await storage.get("difficulty")) ?? "all"
+    const category = (await storage.get("category")) ?? "all"
     let leetCodeProblems = []
     // Check if list is from Leetcode Graphql or all
     if (problemSet === "all" || problemSet.startsWith("lg")) {
@@ -134,9 +135,16 @@ const generateRandomLeetCodeProblem = async () => {
       }
       const res = await fetch(chrome.runtime.getURL(problemSetURLs[problemSet]))
       leetCodeProblems = await res.json()
+
       if (difficulty !== "all") {
         leetCodeProblems = leetCodeProblems.filter((problem) => {
           return problem.difficulty.toLowerCase() === difficulty.toLowerCase()
+        })
+      }
+      if (category !== "all") {
+        leetCodeProblems = leetCodeProblems.filter((problem) => {
+          console.log(problem.category.toLowerCase(), category.toLowerCase())
+          return problem.category.toLowerCase() === category.toLowerCase()
         })
       }
 

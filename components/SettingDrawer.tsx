@@ -8,6 +8,7 @@ import SettingLabel from "./SettingLabel"
 const SettingDrawer = ({ close, setClose }) => {
   const [problemSets, setProblemSets] = useStorage<string>("problemSets")
   const [difficulty, setDifficulty] = useStorage<string>("difficulty")
+  const [category, setCategory] = useStorage<string>("category")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
   const settingList = [
     {
@@ -47,7 +48,40 @@ const SettingDrawer = ({ close, setClose }) => {
           !leetcodeProblemSolved ? await updateStorage() : null
         }
       }
+    },
+    {
+      name: "Problem Category",
+      description: "Choose the category you'd like to solve",
+      dropdownProps: {
+        options: {
+          all: "All categories",
+          "arrays & hashing": "Arrays & Hashing",
+          "two pointers": "Two Pointers",
+          "sliding window": "Sliding Window",
+          stack: "Stack",
+          "binary search": "Binary Search",
+          "linked list": "Linked List",
+          trees: "Trees",
+          tries: "Tries",
+          "heap / priority queue": "Heap / Priority Queue",
+          backtracking: "Backtracking",
+          graphs: "Graphs",
+          "advanced graphs": "Advanced Graphs",
+          "1-d dynamic programming": "1-D Dynamic Programming",
+          "2-d dynamic programming": "2-D Dynamic Programming",
+          greedy: "Greedy",
+          intervals: "Intervals",
+          "math & geometry": "Math & Geometry",
+          "bit manipulation": "Bit Manipulation",
+          javascript: "JavaScript"
+        },
+        defaultValue: category,
+        handleChange: async (e) => {
+          setCategory(e.target.value)
+          !leetcodeProblemSolved ? updateStorage() : null
+        }
     }
+  }
     /* TODO: Add this feature later
     {
       name: "Number of problems to solve",
