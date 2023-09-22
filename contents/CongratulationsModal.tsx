@@ -17,16 +17,21 @@ export const getStyle = () => {
 const CongratulationsModal = () => {
   const [showModal, setShowModal] = useState(false)
   const [language, setLanguage] = useState("")
-
   useEffect(() => {
     const handleClick = (event: any) => {
-      if (
-        event.target.matches('button[data-e2e-locator="console-submit-button"]')
-      ) {
-        chrome.runtime.sendMessage({ action: "userClickedSubmit" })
+      let currentTarget = event.target
+      while (currentTarget) {
+        if (
+          currentTarget.matches(
+            'button[data-e2e-locator="console-submit-button"]'
+          )
+        ) {
+          chrome.runtime.sendMessage({ action: "userClickedSubmit" })
+        }
+        // We hit a child element, so we go up the DOM until we're at the button
+        currentTarget = currentTarget.parentElement
       }
     }
-
     const handleMessage = (message: any, sender: any, sendResponse: any) => {
       if (message.action === "userSolvedProblem") {
         setShowModal(true)

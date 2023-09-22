@@ -4,6 +4,7 @@ import { Storage } from "@plasmohq/storage"
 const LEETCODE_URL = "https://leetcode.com"
 const RULE_ID = 1
 const storage = new Storage()
+
 // Helper functions
 const isLeetCodeUrl = (url: string) => url.includes(LEETCODE_URL)
 
@@ -18,7 +19,6 @@ const sendUserSolvedMessage = (languageUsed: string) => {
     })
   })
 }
-
 //Global modifiable variables (I know, I know, but it's the easiest way to do it fix it yourself)
 
 let leetcodeProblemSolved = false
@@ -27,6 +27,7 @@ let leetCodeProblem = {
   name: ""
 }
 let lastSubmissionDate = new Date(0)
+let solvedListenerActive = false
 
 // Get Problem List from leetcode graphql API
 const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
@@ -180,6 +181,11 @@ const onMessageReceived = (message, sender, sendResponse) => {
       return true
     case "userClickedSubmit":
       lastSubmissionDate = new Date()
+      solvedListenerActive = true
+      console.log("User clicked submit, adding listener", solvedListenerActive)
+      chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
+        urls: ["*://leetcode.com/submissions/detail/*/check/"]
+      })
       break
     default:
       console.warn("Unknown message action:", message.action)
@@ -242,16 +248,11 @@ export const updateStorage = async () => {
     await setRedirectRule(randomProblemURL)
   }
 }
-// Checks if a request is currently happening. In order to not make another request (prevents infinite loop)
-let scriptInitiatedRequest = false
 //let lastCheckedUrl = ""
 //let lastCheckedTimestamp = 0
 const checkIfUserSolvedProblem = async (details) => {
-  const now = Date.now()
-  console.log(
-    "oh so you're a developer huh, nice check this out and see if there's any errors"
-  )
-
+  // If the user has already solved the problem, then don't do anything
+  if (await storage.get("leetCodeProblemSolved")) return
   // Get the current active tab's URL
   let currentURL = ""
   try {
@@ -271,34 +272,43 @@ const checkIfUserSolvedProblem = async (details) => {
     leetCodeURL === currentURL || leetCodeURL + "description/" === currentURL
 
   if (
-    !sameUrl || // Checking with the active tab's URL
-    !chrome.webRequest.onCompleted.hasListener(checkIfUserSolvedProblem)
+    !sameUrl // Checking with the active tab's URL
   ) {
     return
   }
-  console.log("Checking now if it's a success submission URL")
+
   //lastCheckedUrl = details.url
   //lastCheckedTimestamp = now
-  console.log(details.url)
-  console.log(
-    "is it a success submission URL? should say true",
-    isSubmissionSuccessURL(details.url)
-  )
+
+  if (solvedListenerActive) {
+    // Remove the listener so that it doesn't fire again, since the outcome will either be success or fail
+    // And we'll add it again when the user clicks submit
+    solvedListenerActive = false
+    chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
+  }
 
   if (isSubmissionSuccessURL(details.url)) {
     try {
-      scriptInitiatedRequest = true
       const response = await fetch(details.url)
       const data = await response.json()
       if (data.state === "STARTED") {
-        console.log("Started state, returning")
+        console.log("Submission is still in progress")
+        // We're not done yet, so add the listener again
+        if (!solvedListenerActive) {
+          solvedListenerActive = true
+          chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
+            urls: ["*://leetcode.com/submissions/detail/*/check/"]
+          })
+        }
         return
       }
       console.log("Checking if state is success")
-      console.log("data.status_msg should be Aceepted:", data.status_msg)
-      console.log("data.state should be SUCCESS", data.state)
-      console.log("data.code_answer should be true", !data.code_answer)
-
+      if (data.status_msg !== "Accepted") {
+        console.log(
+          "It is not a success submission, user did not solve problem"
+        )
+        return
+      }
       if (
         data.status_msg === "Accepted" &&
         data.state === "SUCCESS" &&
@@ -319,8 +329,6 @@ const checkIfUserSolvedProblem = async (details) => {
       }
     } catch (error) {
       console.error("Error:", error)
-    } finally {
-      scriptInitiatedRequest = false
     }
   }
 }
@@ -363,9 +371,6 @@ async function checkResetStreak() {
 chrome.runtime.onInstalled.addListener(async () => {
   await updateStorage()
   await checkResetStreak()
-  chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
-    urls: ["*://leetcode.com/submissions/detail/*/check/"]
-  })
 })
 
 // Ensure the alarm is set when the extension starts
@@ -388,13 +393,8 @@ chrome.alarms.get("midnightAlarm", (alarm) => {
 
 // Update the storage and check if streak should be reset when the alarm is fired
 chrome.alarms.onAlarm.addListener(async () => {
-  updateStorage()
-  checkResetStreak()
-  if (!chrome.webRequest.onCompleted.hasListener(checkIfUserSolvedProblem)) {
-    chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
-      urls: ["*://leetcode.com/submissions/detail/*/check/"]
-    })
-  }
+  await updateStorage()
+  await checkResetStreak()
 })
-
+// Need to add these listeners to global scope so that when the workers become inactive, they are set again
 chrome.runtime.onMessage.addListener(onMessageReceived)
