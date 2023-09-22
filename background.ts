@@ -120,7 +120,7 @@ const generateRandomLeetCodeProblem = async () => {
       const randomProblem = leetCodeProblems[randomIndex]
       const randomProblemURL =
         "https://leetcode.com/problems/" +
-        randomProblem.title.replace(/ /g, "-").toLowerCase() +
+        randomProblem.title.trim().replace(/ /g, "-").toLowerCase() +
         "/"
       const randomProblemName = randomProblem.title
       await storage.set("loading", false)
