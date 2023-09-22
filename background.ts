@@ -291,7 +291,7 @@ const checkIfUserSolvedProblem = async (details) => {
     try {
       const response = await fetch(details.url)
       const data = await response.json()
-      if (data.state === "STARTED") {
+      if (data.state === "STARTED" || data.state === "PENDING") {
         console.log("Submission is still in progress")
         // We're not done yet, so add the listener again
         if (!solvedListenerActive) {
