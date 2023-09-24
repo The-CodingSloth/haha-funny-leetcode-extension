@@ -102,6 +102,7 @@ const generateRandomLeetCodeProblem = async () => {
   try {
     const problemSet = (await storage.get("problemSets")) ?? "all"
     const difficulty = (await storage.get("difficulty")) ?? "all"
+    const includePremium = Boolean(await storage.get("includePremium")) ?? false
     let leetCodeProblems = []
     // Check if list is from Leetcode Graphql or all
     if (problemSet === "all" || problemSet.startsWith("lg")) {
@@ -134,20 +135,13 @@ const generateRandomLeetCodeProblem = async () => {
       }
       const res = await fetch(chrome.runtime.getURL(problemSetURLs[problemSet]))
       leetCodeProblems = await res.json()
-      if (difficulty !== "all") {
-        leetCodeProblems = leetCodeProblems.filter((problem) => {
-          return problem.difficulty.toLowerCase() === difficulty.toLowerCase()
-        })
-      }
+      leetCodeProblems = leetCodeProblems
+        .filter((problem) => {
+          return (includePremium || !problem.isPremium) &&
+          (difficulty == "all" || problem.difficulty.toLowerCase() === difficulty.toLowerCase())
+      })
 
       let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
-      // If the problem is premium, then skip it and go to the next problem until you find a non-premium problem
-      while (leetCodeProblems[randomIndex].isPremium) {
-        randomIndex++
-        // Prevent index from going out of bounds
-        randomIndex =
-          (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
-      }
       const randomProblem = leetCodeProblems[randomIndex]
       const randomProblemURL = randomProblem.href
       const randomProblemName = randomProblem.text
