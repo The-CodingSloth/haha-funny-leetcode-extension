@@ -220,6 +220,8 @@ async function setRedirectRule(newRedirectUrl: string) {
     console.error("Error updating redirect rule:", error)
   }
 }
+
+
 export const updateStorage = async () => {
   const result = await generateRandomLeetCodeProblem()
 
@@ -360,6 +362,43 @@ async function checkResetStreak() {
     await storage.set("currentStreak", 0)
   }
 }
+
+
+export async function DisableTotureRedirect() {
+  var leetCodeDisabled = await storage.get<boolean>("disabled");
+
+  if (leetCodeDisabled == undefined) { // if storage value has never been set / Default: true / Event: onClick
+    await storage.set("disabled", true) // Not to sure if there is an area that values are being init'ed but this could go there 
+    leetCodeDisabled = await storage.get("disabled")
+  } 
+  
+  leetCodeDisabled = !leetCodeDisabled; // Bool toggle
+
+  await storage.set("disabled", leetCodeDisabled)
+
+  UpdateDisabledRules(leetCodeDisabled) // Enable and disable the redirect rules
+
+  return leetCodeDisabled; // Return disable value to popup
+}
+
+async function UpdateDisabledRules(disabled:boolean) {
+
+  if (disabled == true) { 
+    chrome.declarativeNetRequest.updateDynamicRules({ //Remove listeners / TODO: Extract reused code, possibly
+      removeRuleIds: [RULE_ID] // use RULE_ID constant
+    });
+
+
+  } else if (disabled == false) {
+    setRedirectRule(await storage.get("problemURL")); //Reapply redirect rule to current stored problem
+    chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, { //Reapply listener / TODO: Extract reused code, possibly
+      urls: ["*://leetcode.com/submissions/detail/*/check/"]
+    })
+
+  }
+}
+
+
 
 // Initialize
 chrome.runtime.onInstalled.addListener(async () => {
