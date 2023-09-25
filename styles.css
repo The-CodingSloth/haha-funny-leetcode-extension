@@ -128,12 +128,16 @@ input[type="number"]::-webkit-outer-spin-button {
   padding: 0.75rem;
   color: white;
   font-weight: 600;
-  text-align: center;
 }
 
 #leetcode-problem-button:hover {
   cursor: pointer;
   background-color: #3c34b5;
+}
+
+#leetcode-disable-button:hover {
+  cursor: pointer;
+  background-color: darkred;
 }
 
 #difficulty-selection {

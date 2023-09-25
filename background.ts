@@ -241,7 +241,8 @@ export const updateStorage = async () => {
     await storage.set("problemDate", new Date().toDateString())
     await storage.set("leetCodeProblemSolved", false)
 
-    await setRedirectRule(randomProblemURL)
+    // If disable rule is ineffect do not set the redirectrule even on random update. 
+    if (await storage.get<boolean>("disabled") === false) await setRedirectRule(randomProblemURL) 
   }
 }
 //let lastCheckedUrl = ""
