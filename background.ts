@@ -222,15 +222,17 @@ async function setRedirectRule(newRedirectUrl: string) {
 }
 
 export const updateStorage = async () => {
-  await generateRandomLeetCodeProblem().then(async (problem) => {
+  try {
+    var problem = await generateRandomLeetCodeProblem()
     console.log("Random problem generated: ", problem)
     leetcodeProblemSolved = false
-
-    await storage.updateProblem(problem, leetcodeProblemSolved)
-    await setRedirectRule(problem.url)
-  }).catch((error) => {
+    await Promise.all([
+      storage.updateProblem(problem, leetcodeProblemSolved),
+      setRedirectRule(problem.url)
+    ])
+  } catch (error) {
     throw new Error("Error generating random problem: " + error)
-  })
+  }
 }
 
 const checkIfUserSolvedProblem = async (details) => {

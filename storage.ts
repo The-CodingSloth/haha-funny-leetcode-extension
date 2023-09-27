@@ -10,10 +10,12 @@ export const initiateLoading = async() => await storage.set("loading", true);
 export const stopLoading = async() => await storage.set("loading", false);
 
 export async function updateProblem(problem: { url: string, name: string }, isSolved: boolean) {
-    await storage.set("problemURL", problem.url)
-    await storage.set("problemName", problem.name)
-    await storage.set("problemDate", new Date().toDateString())
-    await updateProblemSolvedState(isSolved)
+    return Promise.all([
+        storage.set("problemURL", problem.url),
+        storage.set("problemName", problem.name),
+        storage.set("problemDate", new Date().toDateString()),
+        updateProblemSolvedState(isSolved)
+    ])
 }
 
 export async function updatePermissions(enabled: boolean) {
@@ -32,19 +34,20 @@ export async function getLastCompletion() {
 }
 
 export async function updateStreak() {
-    await updateProblemSolvedState(true);
+    const [_, lastCompletion] = await Promise.all([
+        updateProblemSolvedState(true),
+        getLastCompletion()
+    ])
 
-    const lastCompletion = await getLastCompletion();
     const now = new Date()
-
-    if (lastCompletion.toDateString() === now.toDateString())
+    if (lastCompletion.toDateString() === new Date().toDateString())
         return
 
-    // This is the first problem that was solved today
-    const bestStreak: number = (await storage.get("bestStreak")) ?? 0
-    const newStreak: number = (await storage.get("currentStreak")) ?? 0 + 1
+    const [bestStreak, newStreak] = await Promise.all([
+        Number(storage.get("bestStreak")) ?? 0,
+        (Number(storage.get("currentStreak")) ?? 0) + 1
+    ])
 
-    // Update streak
     await storage.set("currentStreak", newStreak)
     await storage.set("lastCompleted", now.toDateString())
     if (newStreak > bestStreak)
