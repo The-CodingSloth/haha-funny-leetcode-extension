@@ -119,9 +119,10 @@ const generateRandomLeetCodeProblem = async () => {
           (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
       }
       const randomProblem = leetCodeProblems[randomIndex]
+      // Replace anything that is not a string or whitespace with "" then replace empty spaces with "-"
       const randomProblemURL =
         "https://leetcode.com/problems/" +
-        randomProblem.title.trim().replace(/ /g, "-").toLowerCase() +
+        randomProblem.title.trim().replace(/[^a-zA-Z\s]/g, "").replace(/\s+/g, "-").toLowerCase() +
         "/"
       const randomProblemName = randomProblem.title
       await storage.set("loading", false)
