@@ -86,6 +86,16 @@ input[type="number"]::-webkit-outer-spin-button {
   align-items: center;
   gap: 0.5rem;
 }
+
+.leetcode-disabled {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: .4rem;
+}
+
 #question-of-day-msg {
   font-size: 1.1rem;
 }
@@ -109,9 +119,25 @@ input[type="number"]::-webkit-outer-spin-button {
   font-weight: 600;
 }
 
+#leetcode-disable-button {
+  background-color: red;
+  font-size: 1rem;
+  border: none;
+  width: 30%;
+  border-radius: 10px;
+  padding: 0.75rem;
+  color: white;
+  font-weight: 600;
+}
+
 #leetcode-problem-button:hover {
   cursor: pointer;
   background-color: #3c34b5;
+}
+
+#leetcode-disable-button:hover {
+  cursor: pointer;
+  background-color: darkred;
 }
 
 #difficulty-selection {

@@ -7,7 +7,7 @@ import { useStorage } from "@plasmohq/storage/hook"
 
 import SettingsIcon from "~components/SettingsIcon"
 
-import { updateStorage } from "./background"
+import { updateStorage, DisableTotureRedirect } from "./background"
 
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html
@@ -28,6 +28,7 @@ const IndexPopup = () => {
   const [randomSolvedMessage, setRandomSolvedMessage] = useState("")
   const [problemName] = useStorage<string>("problemName")
   const [problemURL] = useStorage<string>("problemURL")
+  const [disabled] = useStorage<boolean>("disabled")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
@@ -110,6 +111,19 @@ const IndexPopup = () => {
               Current Streak: {currentStreak ?? 0}
             </h2>
             <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
+            <div className="leetcode-disabled">
+              <button
+                id="leetcode-disable-button"
+                onClick={async (e) => {
+                  const element = e.target as HTMLElement; // Cast EventTarget to HtmlElement
+
+                  if (await DisableTotureRedirect()) element.innerText = "Disabled" // Toggle between texts on clicks
+                  else element.innerText = "Disable"
+
+                  }}>
+                  {disabled ? "Enable" : "Disable"  /* Displays text based on saved state */}
+              </button>
+            </div>
           </>
         )
       ) : (
