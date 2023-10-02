@@ -1,9 +1,8 @@
-import { Storage } from "@plasmohq/storage"
+import { storage } from "storage"
 
 //Constants
 const LEETCODE_URL = "https://leetcode.com"
 const RULE_ID = 1
-const storage = new Storage()
 
 // Helper functions
 const isLeetCodeUrl = (url: string) => url.includes(LEETCODE_URL)
@@ -82,7 +81,7 @@ const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
     })
 
     const responseData = await response.json()
-    await storage.set("permissionsEnabled", true)
+    await storage.updatePermissions(true);
     return responseData.data.problemsetQuestionList.questions
   } catch (error) {
     console.log(error.toString())
@@ -92,21 +91,21 @@ const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
       error.message === "Network response was not ok"
     ) {
       console.log("CORS error detected.")
-      await storage.set("permissionsEnabled", false)
+      await storage.updatePermissions(false);
     }
     return undefined
   }
 }
 
-const generateRandomLeetCodeProblem = async () => {
+async function generateRandomLeetCodeProblem() : Promise<{ url: string, name: string }> {
   try {
-    const problemSet = (await storage.get("problemSets")) ?? "all"
-    const difficulty = (await storage.get("difficulty")) ?? "all"
-    const includePremium = Boolean(await storage.get("includePremium")) ?? false
+    const problemSet = await storage.getProblemSet()
+    const difficulty = await storage.getDifficulty()
+    const includePremium = await storage.getIncludePremium()
     let leetCodeProblems = []
     // Check if list is from Leetcode Graphql or all
     if (problemSet === "all" || problemSet.startsWith("lg")) {
-      await storage.set("loading", true)
+      await storage.initiateLoading()
       // Remove lg- or all from string for better logic processing
       leetCodeProblems = await getProblemListFromLeetCodeAPI(
         difficulty,
@@ -125,8 +124,9 @@ const generateRandomLeetCodeProblem = async () => {
         randomProblem.title.trim().replace(/[^a-zA-Z\s]/g, "").replace(/\s+/g, "-").toLowerCase() +
         "/"
       const randomProblemName = randomProblem.title
-      await storage.set("loading", false)
-      return { randomProblemURL, randomProblemName }
+      // await storage.set("loading", false)
+      await storage.stopLoading()
+      return { url: randomProblemURL, name: randomProblemName }
     } else {
       // TODO: Need to find a way to filter out premium problems for these JSON files
       const problemSetURLs = {
@@ -146,13 +146,13 @@ const generateRandomLeetCodeProblem = async () => {
       const randomProblem = leetCodeProblems[randomIndex]
       const randomProblemURL = randomProblem.href
       const randomProblemName = randomProblem.text
-      return { randomProblemURL, randomProblemName }
+      return { url: randomProblemURL, name: randomProblemName }
     }
   } catch (error) {
     console.error("Error generating random problem", error)
     return undefined
   } finally {
-    await storage.set("loading", false)
+    await storage.stopLoading()
   }
 }
 
@@ -221,33 +221,25 @@ async function setRedirectRule(newRedirectUrl: string) {
     console.error("Error updating redirect rule:", error)
   }
 }
+
 export const updateStorage = async () => {
-  const result = await generateRandomLeetCodeProblem()
-
-  if (!result) {
-    throw new Error("Error generating random problem")
-  } else {
-    const { randomProblemURL, randomProblemName } = result
-    console.log(
-      "Random problem generated:",
-      randomProblemName,
-      randomProblemURL
-    )
+  try {
+    var problem = await generateRandomLeetCodeProblem()
+    console.log("Random problem generated: ", problem)
     leetcodeProblemSolved = false
-    leetCodeProblem = { url: randomProblemURL, name: randomProblemName }
-    await storage.set("problemURL", randomProblemURL)
-    await storage.set("problemName", randomProblemName)
-    await storage.set("problemDate", new Date().toDateString())
-    await storage.set("leetCodeProblemSolved", false)
-
-    await setRedirectRule(randomProblemURL)
+    await Promise.all([
+      storage.updateProblem(problem, leetcodeProblemSolved),
+      setRedirectRule(problem.url)
+    ])
+  } catch (error) {
+    throw new Error("Error generating random problem: " + error)
   }
 }
-//let lastCheckedUrl = ""
-//let lastCheckedTimestamp = 0
+
 const checkIfUserSolvedProblem = async (details) => {
   // If the user has already solved the problem, then don't do anything
-  if (await storage.get("leetCodeProblemSolved")) return
+  if (await storage.getProblemSolved())
+    return
   // Get the current active tab's URL
   let currentURL = ""
   try {
@@ -261,10 +253,10 @@ const checkIfUserSolvedProblem = async (details) => {
     return
   }
 
-  const leetCodeURL = await storage.get("problemURL")
+  const problemUrl = await storage.getProblemUrl();
 
   const sameUrl =
-    leetCodeURL === currentURL || leetCodeURL + "description/" === currentURL
+    problemUrl === currentURL || problemUrl + "description/" === currentURL
 
   if (
     !sameUrl // Checking with the active tab's URL
@@ -310,14 +302,13 @@ const checkIfUserSolvedProblem = async (details) => {
         !data.code_answer
       ) {
         console.log("It is a success submission, user solved problem")
-        await updateStreak()
+        await storage.updateStreak()
 
         leetcodeProblemSolved = true
         // They solved the problem, so no need to redirect anymore they're free, for now
         chrome.declarativeNetRequest.updateDynamicRules({
           removeRuleIds: [RULE_ID] // use RULE_ID constant
         })
-        await storage.set("leetCodeProblemSolved", true)
         chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
         sendUserSolvedMessage(data?.lang)
         console.log("User solved problem, should've gotten the success message")
@@ -327,45 +318,22 @@ const checkIfUserSolvedProblem = async (details) => {
     }
   }
 }
-// Check if a streak should be updated. Should only be called when a problem has been completed.
-async function updateStreak() {
-  const lastCompletedString = await storage.get("lastCompleted")
-  const lastCompleted = lastCompletedString
-    ? new Date(lastCompletedString)
-    : new Date(0)
-  const now = new Date()
 
-  if (lastCompleted.toDateString() === now.toDateString()) return
-
-  // This is the first problem that was solved today
-  const currentStreak: number = (await storage.get("currentStreak")) ?? 0
-  const bestStreak: number = (await storage.get("bestStreak")) ?? 0
-  const newStreak = currentStreak + 1
-
-  // Update streak
-  await storage.set("currentStreak", newStreak)
-  await storage.set("lastCompleted", now.toDateString())
-  if (newStreak > bestStreak) await storage.set("bestStreak", newStreak)
-}
-
-// Check if a streak should be reset. Should be called when extension starts up and peridically.
-async function checkResetStreak() {
-  const lastCompletedString = await storage.get("lastCompleted")
-  const lastCompleted = lastCompletedString
-    ? new Date(lastCompletedString)
-    : new Date(0) // Returns Unix Epoch if item is null
-  const now = new Date()
-  const yesterday = now.getDate() - 1
-
-  if (lastCompleted.getDate() < yesterday) {
-    await storage.set("currentStreak", 0)
+// Resets the completion streak when at least one day has passed since last completion
+async function tryResetStreak() {
+  const lastCompletion = await storage.getLastCompletion()
+  const yesterday = new Date().getDate() - 1  
+  if (lastCompletion.getDate() < yesterday) {
+      await storage.resetStreak()
+      return true;
   }
+  return false;
 }
 
 // Initialize
 chrome.runtime.onInstalled.addListener(async () => {
   await updateStorage()
-  await checkResetStreak()
+  await tryResetStreak()
 })
 
 // Ensure the alarm is set when the extension starts
@@ -389,7 +357,7 @@ chrome.alarms.get("midnightAlarm", (alarm) => {
 // Update the storage and check if streak should be reset when the alarm is fired
 chrome.alarms.onAlarm.addListener(async () => {
   await updateStorage()
-  await checkResetStreak()
+  await tryResetStreak()
 })
 // Need to add these listeners to global scope so that when the workers become inactive, they are set again
 chrome.runtime.onMessage.addListener(onMessageReceived)
