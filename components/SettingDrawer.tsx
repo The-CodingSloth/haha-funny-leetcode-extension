@@ -1,6 +1,6 @@
 import { useStorage } from "@plasmohq/storage/hook"
 
-import { updateStorage } from "~background"
+import { toggleUrlListener, updateStorage } from "~background"
 
 import BackIcon from "./BackIcon"
 import SettingLabel from "./SettingLabel"
@@ -9,7 +9,11 @@ const SettingDrawer = ({ close, setClose }) => {
   const [problemSets, setProblemSets] = useStorage<string>("problemSets")
   const [difficulty, setDifficulty] = useStorage<string>("difficulty")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
-  const [includePremium, setIncludePremium] = useStorage<boolean>("includePremium")
+  const [includePremium, setIncludePremium] =
+    useStorage<boolean>("includePremium")
+  const [hyperTortureMode, setHyperTortureMode] =
+    useStorage<boolean>("hyperTortureMode")
+  const [_, setHTcurrentStreak] = useStorage<number>("HT_currentStreak")
   const settingList = [
     {
       name: "Problem Sets",
@@ -23,7 +27,7 @@ const SettingDrawer = ({ close, setClose }) => {
           "lg-5htp6xyg": "LeetCode Curated SQL 70",
           "lg-79h8rn6": "Top 100 Liked Questions",
           "lg-wpwgkgt": "Top Interview Questions",
-          "lg-o9exaktc": "Tayomide's Questions",
+          "lg-o9exaktc": "Tayomide's Questions"
         },
         defaultValue: problemSets,
         handleChange: async (e) => {
@@ -60,6 +64,20 @@ const SettingDrawer = ({ close, setClose }) => {
         }
       }
     },
+    {
+      name: 'Enable "Hyper Torture" mode 🤓',
+      description:
+        "Toggle mode that forces you to solve a problem every time you open a new page",
+      checkboxProps: {
+        checked: hyperTortureMode ?? false,
+        handleChange: async (e) => {
+          setHTcurrentStreak(0)
+          setHyperTortureMode(e.target.checked)
+          await updateStorage()
+          await toggleUrlListener(e.target.checked)
+        }
+      }
+    }
     /* TODO: Add this feature later
     {
       name: "Number of problems to solve",
@@ -81,7 +99,7 @@ const SettingDrawer = ({ close, setClose }) => {
         <h1>Settings</h1>
       </nav>
       <ul className="setting-labels">
-        {leetcodeProblemSolved && (
+        {leetcodeProblemSolved && !hyperTortureMode && (
           <p className="settings-problem-solved">
             Congrats you solved your problem today, these settings will be
             applied tomorrow

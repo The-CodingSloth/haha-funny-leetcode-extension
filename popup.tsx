@@ -9,6 +9,26 @@ import SettingsIcon from "~components/SettingsIcon"
 
 import { updateStorage } from "./background"
 
+const HyperTortureModeIndex = ({ message, problemName }): React.JSX.Element => {
+  const [noEscapeMessage, setNoEscapeMessage] = useState("")
+  return (
+    <>
+      <h1 id="hyperTorture-message">❗Hyper 🤓 Torture mode active❗</h1>
+
+      <h2 id="unsolved-message">{message}</h2>
+
+      <div className="leetcode-info">
+        <p id="leetcode-problem-name">{problemName}</p>
+        <button
+          id="leetcode-problem-button"
+          onMouseOver={() => setNoEscapeMessage("There Is No Escape")}>
+          {noEscapeMessage || "Solve it"}
+        </button>
+      </div>
+    </>
+  )
+}
+
 const IndexPopup = () => {
   // Gets information from background.js and displays it on popup.html
   const possibleUnSolvedMessages = [
@@ -24,13 +44,25 @@ const IndexPopup = () => {
     "The LeetCode Torture gods are pleased. Rest, for tomorrow brings a new challenge",
     "Solved your problem for the day, nice, go treat yourself"
   ]
+  const possibleHyperTortureMessages = [
+    "Your code is compiling... just kidding, prepare for eternal agony.",
+    "Infinite loop of despair activated.",
+    "Feel the burn(out), keep those functions running.",
+    "Error 404: Social life not found. Keep coding.",
+    "Another day, another dollar... subtracted from your sanity budget.",
+    "Commit to the code grind, the keyboard is your only friend."
+  ]
   const [randomUnsolvedMessage, setRandomUnsolvedMessage] = useState("")
   const [randomSolvedMessage, setRandomSolvedMessage] = useState("")
+  const [randomHyperTortureMessage, setRandomHyperTortureMessage] = useState("")
   const [problemName] = useStorage<string>("problemName")
   const [problemURL] = useStorage<string>("problemURL")
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
+  const [hyperTortureMode] = useStorage<boolean>("hyperTortureMode")
   const [currentStreak] = useStorage<number>("currentStreak")
   const [bestStreak] = useStorage<number>("bestStreak")
+  const [HT_currentStreak] = useStorage<number>("HT_currentStreak")
+  const [HT_bestStreak] = useStorage<number>("HT_bestStreak")
   const [drawerClosed, setDrawerClosed] = useState(true)
   const [loading, setLoading] = useStorage<boolean>("loading", true)
   const [permissionsEnabled] = useStorage<boolean>("permissionsEnabled", true)
@@ -39,10 +71,17 @@ const IndexPopup = () => {
     const randomUnsolvedIndex = Math.floor(
       Math.random() * possibleUnSolvedMessages.length
     )
+    const randomPossibleHyperTortureMessagesIndex = Math.floor(
+      Math.random() * possibleHyperTortureMessages.length
+    )
     const randomSolvedIndex = Math.floor(
       Math.random() * possibleSolvedMessages.length
     )
+    console.log(hyperTortureMode)
     setRandomSolvedMessage(possibleSolvedMessages[randomSolvedIndex])
+    setRandomHyperTortureMessage(
+      possibleHyperTortureMessages[randomPossibleHyperTortureMessagesIndex]
+    )
     setRandomUnsolvedMessage(possibleUnSolvedMessages[randomUnsolvedIndex])
     // Makes sure the loading screen isn't stuck on for initial render
     let timer
@@ -90,9 +129,15 @@ const IndexPopup = () => {
           </div>
         ) : (
           <>
-            {!leetcodeProblemSolved ? (
+            {hyperTortureMode ? (
+              <HyperTortureModeIndex
+                message={randomHyperTortureMessage}
+                problemName={problemName}
+              />
+            ) : !leetcodeProblemSolved ? (
               <>
                 <h2 id="unsolved-message">{randomUnsolvedMessage}</h2>
+
                 <div className="leetcode-info">
                   <p className="question-of-day-msg">Today's Question</p>
                   <p id="leetcode-problem-name">{problemName}</p>
@@ -107,9 +152,13 @@ const IndexPopup = () => {
               <h2 id="solved-message">{randomSolvedMessage}</h2>
             )}
             <h2 id="current-streak-message">
-              Current Streak: {currentStreak ?? 0}
+              Current Streak:{" "}
+              {hyperTortureMode ? HT_currentStreak ?? 0 : currentStreak ?? 0}
             </h2>
-            <h2 id="best-streak-message">Best Streak: {bestStreak ?? 0}</h2>
+            <h2 id="best-streak-message">
+              Best Streak:{" "}
+              {hyperTortureMode ? HT_bestStreak ?? 0 : bestStreak ?? 0}
+            </h2>
           </>
         )
       ) : (
