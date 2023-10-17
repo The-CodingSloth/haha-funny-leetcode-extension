@@ -1,4 +1,4 @@
-import { storage } from "storage"
+import { getHyperTortureMode, resetHyperTortureStreak, storage } from "storage"
 
 //Constants
 const LEETCODE_URL = "https://leetcode.com"
@@ -18,6 +18,14 @@ const sendUserSolvedMessage = (languageUsed: string) => {
     })
   })
 }
+
+const sendUserFailedMessage = () => {
+  chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, {
+      action: "userFailedProblem"
+    })
+  })
+}
 //Global modifiable variables (I know, I know, but it's the easiest way to do it fix it yourself)
 
 let leetcodeProblemSolved = false
@@ -27,6 +35,8 @@ let leetCodeProblem = {
 }
 let lastSubmissionDate = new Date(0)
 let solvedListenerActive = false
+let lastAttemptedUrl = null
+let urlListener = null
 
 // Get Problem List from leetcode graphql API
 const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
@@ -81,7 +91,7 @@ const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
     })
 
     const responseData = await response.json()
-    await storage.updatePermissions(true);
+    await storage.updatePermissions(true)
     return responseData.data.problemsetQuestionList.questions
   } catch (error) {
     console.log(error.toString())
@@ -91,13 +101,16 @@ const getProblemListFromLeetCodeAPI = async (difficulty, problemSet) => {
       error.message === "Network response was not ok"
     ) {
       console.log("CORS error detected.")
-      await storage.updatePermissions(false);
+      await storage.updatePermissions(false)
     }
     return undefined
   }
 }
 
-async function generateRandomLeetCodeProblem() : Promise<{ url: string, name: string }> {
+async function generateRandomLeetCodeProblem(): Promise<{
+  url: string
+  name: string
+}> {
   try {
     const problemSet = await storage.getProblemSet()
     const difficulty = await storage.getDifficulty()
@@ -121,7 +134,11 @@ async function generateRandomLeetCodeProblem() : Promise<{ url: string, name: st
       // Replace anything that is not a string or whitespace with "" then replace empty spaces with "-"
       const randomProblemURL =
         "https://leetcode.com/problems/" +
-        randomProblem.title.trim().replace(/[^a-zA-Z\s]/g, "").replace(/\s+/g, "-").toLowerCase() +
+        randomProblem.title
+          .trim()
+          .replace(/[^a-zA-Z\s]/g, "")
+          .replace(/\s+/g, "-")
+          .toLowerCase() +
         "/"
       const randomProblemName = randomProblem.title
       // await storage.set("loading", false)
@@ -136,10 +153,12 @@ async function generateRandomLeetCodeProblem() : Promise<{ url: string, name: st
       }
       const res = await fetch(chrome.runtime.getURL(problemSetURLs[problemSet]))
       leetCodeProblems = await res.json()
-      leetCodeProblems = leetCodeProblems
-        .filter((problem) => {
-          return (includePremium || !problem.isPremium) &&
-          (difficulty == "all" || problem.difficulty.toLowerCase() === difficulty.toLowerCase())
+      leetCodeProblems = leetCodeProblems.filter((problem) => {
+        return (
+          (includePremium || !problem.isPremium) &&
+          (difficulty == "all" ||
+            problem.difficulty.toLowerCase() === difficulty.toLowerCase())
+        )
       })
 
       let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
@@ -238,8 +257,7 @@ export const updateStorage = async () => {
 
 const checkIfUserSolvedProblem = async (details) => {
   // If the user has already solved the problem, then don't do anything
-  if (await storage.getProblemSolved())
-    return
+  if (await storage.getProblemSolved()) return
   // Get the current active tab's URL
   let currentURL = ""
   try {
@@ -253,7 +271,7 @@ const checkIfUserSolvedProblem = async (details) => {
     return
   }
 
-  const problemUrl = await storage.getProblemUrl();
+  const problemUrl = await storage.getProblemUrl()
 
   const sameUrl =
     problemUrl === currentURL || problemUrl + "description/" === currentURL
@@ -276,6 +294,7 @@ const checkIfUserSolvedProblem = async (details) => {
 
   if (isSubmissionSuccessURL(details.url)) {
     try {
+      const hyperTortureMode = await getHyperTortureMode()
       const response = await fetch(details.url)
       const data = await response.json()
       if (data.state === "STARTED" || data.state === "PENDING") {
@@ -291,6 +310,10 @@ const checkIfUserSolvedProblem = async (details) => {
       }
       console.log("Checking if state is success")
       if (data.status_msg !== "Accepted") {
+        if (hyperTortureMode) {
+          await resetHyperTortureStreak()
+          sendUserFailedMessage()
+        }
         console.log(
           "It is not a success submission, user did not solve problem"
         )
@@ -310,8 +333,15 @@ const checkIfUserSolvedProblem = async (details) => {
           removeRuleIds: [RULE_ID] // use RULE_ID constant
         })
         chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
-        sendUserSolvedMessage(data?.lang)
         console.log("User solved problem, should've gotten the success message")
+        if (hyperTortureMode) {
+          if (lastAttemptedUrl) {
+            chrome.tabs.update({ url: lastAttemptedUrl })
+          }
+          await updateStorage()
+        } else {
+          sendUserSolvedMessage(data?.lang)
+        }
       }
     } catch (error) {
       console.error("Error:", error)
@@ -322,18 +352,41 @@ const checkIfUserSolvedProblem = async (details) => {
 // Resets the completion streak when at least one day has passed since last completion
 async function tryResetStreak() {
   const lastCompletion = await storage.getLastCompletion()
-  const yesterday = new Date().getDate() - 1  
+  const yesterday = new Date().getDate() - 1
   if (lastCompletion.getDate() < yesterday) {
-      await storage.resetStreak()
-      return true;
+    await storage.resetStreak()
+    return true
   }
-  return false;
+  return false
+}
+
+export async function toggleUrlListener(toggle: boolean): Promise<void> {
+  if (toggle) {
+    // Save users request url for further redirect
+    urlListener = chrome.webRequest.onBeforeRequest.addListener(
+      (details) => {
+        if (
+          !isLeetCodeUrl(details.url) &&
+          details.type === "main_frame" &&
+          !details.url.includes("chrome-extension:")
+        ) {
+          // Save the URL the user tried to open
+          lastAttemptedUrl = details.url
+          console.log(lastAttemptedUrl)
+        }
+      },
+      { urls: ["<all_urls>"] }
+    )
+  } else {
+    chrome.webRequest.onBeforeRequest.removeListener(urlListener)
+  }
 }
 
 // Initialize
 chrome.runtime.onInstalled.addListener(async () => {
   await updateStorage()
   await tryResetStreak()
+  await toggleUrlListener(await getHyperTortureMode())
 })
 
 // Ensure the alarm is set when the extension starts

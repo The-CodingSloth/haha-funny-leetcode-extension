@@ -68,7 +68,8 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 #unsolved-message,
-#solved-message {
+#solved-message,
+#hyperTorture-message {
   text-align: center;
   padding: 0.5rem;
 }
