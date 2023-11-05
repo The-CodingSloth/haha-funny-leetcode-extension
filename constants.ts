@@ -1,7 +1,7 @@
 export const messages = {
     cpp: {
       language: "cpp",
-      message: "You think you are better than everyone just because your language have pointers?",
+      message: "You think you are better than everyone just because your language has pointers?",
     },
     java: {
       language: "java",
@@ -21,11 +21,11 @@ export const messages = {
     },
     typescript:{
       language: "typescript",
-      message: "oooh, look at me, my javascript is soo fancy!!",
+      message: "Oooh, look at me, my javascript is soo fancy!!",
     },
     python:{
       language: "python",
-      message: "Tell me the truth, you have as many friends in real life as you have ; in your code, right?",
+      message: "Tell me the truth, you have as many friends in real life as you have \";\" in your code, right?",
     },
     python3:{
       language: "python3",
@@ -33,7 +33,7 @@ export const messages = {
     },
     csharp:{
       language: "csharp",
-      message: "You know, if you put a million monkeys at a million keyboards, one of them will eventually write a Java program. The rest of them will write C# programs."
+      message: "You know, if you point a million monkeys at a million keyboards, one of them will eventually write a Java program. The rest of them will write C# programs."
     },
     ruby:{
       language: "ruby",
@@ -53,7 +53,7 @@ export const messages = {
     },
     elixir:{
       language: "elixir",
-      message: "You sound like a language used in lord of the rings.",
+      message: "You sound like a language used in Lord of the Rings.",
     },
     dart:{
       language: "dart",
@@ -61,7 +61,7 @@ export const messages = {
     },
     kotlin:{
       language: "kotlin",
-      message: "Seriouly? Kotlin for leetcode?",
+      message: "Seriously? Kotlin for leetcode?",
     },
     php:{
       language: "php",
