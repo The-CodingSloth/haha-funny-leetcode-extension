@@ -15,10 +15,12 @@ body {
   transition: all 0.3s ease-in-out;
   overflow: hidden;
 }
+
 .popup.settings {
   width: 25rem;
   min-height: 25rem;
 }
+
 nav {
   background-color: #4f46e5;
   height: 2em;
@@ -26,6 +28,7 @@ nav {
   flex-direction: row;
   gap: 0.2rem;
   align-items: center;
+  margin-bottom: 0.5rem;
   padding: 0.5rem;
 }
 
@@ -34,7 +37,7 @@ nav h1 {
   padding: 0;
   margin: 0;
   line-height: 1em;
-  font-weight: 500;
+  font-weight: bold;
 }
 
 nav button {
@@ -57,7 +60,7 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   appearance: none;
-  margin: 0; /* Optional, removes any remaining margin */
+  margin: 0;
 }
 
 .title {
@@ -75,11 +78,13 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 #unsolved-message {
-  font-size: 0.85rem;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
 }
 #solved-message {
   font-size: 1.5rem;
 }
+
 .leetcode-info {
   display: flex;
   flex-direction: column;
@@ -87,23 +92,26 @@ input[type="number"]::-webkit-outer-spin-button {
   align-items: center;
   gap: 0.5rem;
 }
+
 #question-of-day-msg {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
+
 #leetcode-problem-name {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: bold;
   text-decoration: none;
+  line-height: 1;
   text-align: center;
   width: 100%;
-  margin: 0.5rem 0;
+  margin-bottom: 0.5rem;
 }
 
 #leetcode-problem-button {
   background-color: #4f46e5;
   font-size: 1rem;
   border: none;
-  width: 30%;
+  width: 50%;
   border-radius: 10px;
   padding: 0.75rem;
   color: white;
@@ -189,6 +197,7 @@ input[type="number"]::-webkit-outer-spin-button {
   right: -100%;
   width: 100%;
   height: 100%;
+  overflow-y: auto;
   background-color: #fff;
   transition: right 0.3s ease-in-out;
 }
@@ -264,6 +273,60 @@ input[type="number"]::-webkit-outer-spin-button {
   gap: 1rem;
   font-size: 0.8rem;
   text-align: center;
+  padding: 1rem;
+  font-weight: 700;
+}
+
+.checking-permissions {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 1rem;
+  font-weight: 700;
+}
+
+.checking-permissions p {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.streak-section {
+  display: flex;
+  justify-content: space-between;
+  flex: 1;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+  padding: 1rem;
+  font-weight: 700;
+}
+
+.current-streak {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.current-streak p {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.solved-section {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 1rem;
+  flex: 1;
+  font-size: 0.8rem;
   padding: 1rem;
   font-weight: 700;
 }
