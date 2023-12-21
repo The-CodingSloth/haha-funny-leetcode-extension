@@ -15,6 +15,8 @@ export const initiateLoading = async () => await storage.set("loading", true)
 export const stopLoading = async () => await storage.set("loading", false)
 export const getHyperTortureMode = async () =>
   !!(await storage.get("hyperTortureMode"))
+export const getEnableRedirectOnEveryProblem = async () =>
+  !!(await storage.get("enableRedirectOnEveryProblem"))
 
 export async function updateProblem(
   problem: { url: string; name: string },
@@ -26,6 +28,10 @@ export async function updateProblem(
     storage.set("problemDate", new Date().toDateString()),
     updateProblemSolvedState(isSolved)
   ])
+}
+
+export async function updateEnableRedirectOnEveryProblem(enabled: boolean) {
+  await storage.set("enableRedirectOnEveryProblem", enabled)
 }
 
 export async function updatePermissions(enabled: boolean) {

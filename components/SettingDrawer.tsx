@@ -11,6 +11,8 @@ const SettingDrawer = ({ close, setClose }) => {
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
   const [includePremium, setIncludePremium] =
     useStorage<boolean>("includePremium")
+  const [enableRedirect, setEnableRedirect] =
+    useStorage<boolean>("enableRedirectOnEveryProblem")
   const [hyperTortureMode, setHyperTortureMode] =
     useStorage<boolean>("hyperTortureMode")
   const [_, setHTcurrentStreak] = useStorage<number>("HT_currentStreak")
@@ -65,6 +67,16 @@ const SettingDrawer = ({ close, setClose }) => {
       }
     },
     {
+      name: "Enable redirects on additional problems",
+      description: "Toggle whether to redirect to the problem page",
+      checkboxProps: {
+        checked: enableRedirect ?? false,
+        handleChange: async (e) => {
+          setEnableRedirect(e.target.checked)
+        }
+      }
+    },
+    {
       name: 'Enable "Hyper Torture" mode 🤓',
       description:
         "Toggle mode that forces you to solve a problem every time you open a new page",
@@ -77,7 +89,7 @@ const SettingDrawer = ({ close, setClose }) => {
           await toggleUrlListener(e.target.checked)
         }
       }
-    }
+    },
     /* TODO: Add this feature later
     {
       name: "Number of problems to solve",
