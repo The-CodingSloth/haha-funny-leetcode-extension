@@ -26,6 +26,7 @@ const SettingDrawer = ({ close, setClose }) => {
           allNeetcode: "All Neetcode Problems",
           NeetCode150: "Neetcode 150",
           Blind75: "Blind 75",
+          metaTop100: "Meta Top 100"
           "lg-5htp6xyg": "LeetCode Curated SQL 70",
           "lg-79h8rn6": "Top 100 Liked Questions",
           "lg-wpwgkgt": "Top Interview Questions",
