@@ -150,7 +150,8 @@ export async function generateRandomLeetCodeProblem(): Promise<{
       const problemSetURLs = {
         allNeetcode: "leetcode-problems/allProblems.json",
         NeetCode150: "leetcode-problems/neetCode150Problems.json",
-        Blind75: "leetcode-problems/blind75Problems.json"
+        Blind75: "leetcode-problems/blind75Problems.json",
+        metaTop100: "leetcode-problems/metaTop100.json"
       }
       const res = await fetch(chrome.runtime.getURL(problemSetURLs[problemSet]))
       leetCodeProblems = await res.json()
