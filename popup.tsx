@@ -9,7 +9,11 @@ import HyperTortureMode from "~components/HyperTortureMode"
 import NoPermissions from "~components/NoPermissions"
 import SettingsIcon from "~components/SettingsIcon"
 
-import { generateRandomLeetCodeProblem, handleAdditionalProblemRedirect, updateProblemState } from "./background"
+import {
+  generateRandomLeetCodeProblem,
+  handleAdditionalProblemRedirect,
+  updateProblemState
+} from "./background"
 
 const IndexPopup = () => {
   const unSolvedMessages = [
@@ -85,7 +89,12 @@ const IndexPopup = () => {
         </div>
       )}
 
-      {hyperTortureMode && <HyperTortureMode message={hyperTortureMessage} problemName={problemName} />}
+      {hyperTortureMode && (
+        <HyperTortureMode
+          message={hyperTortureMessage}
+          problemName={problemName}
+        />
+      )}
 
       {!leetcodeProblemSolved && !hyperTortureMode && (
         <>

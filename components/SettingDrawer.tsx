@@ -1,6 +1,10 @@
 import { useStorage } from "@plasmohq/storage/hook"
 
-import { toggleUrlListener, updateStorage } from "~background"
+import {
+  handleRedirectRule,
+  toggleUrlListener,
+  updateStorage
+} from "~background"
 
 import BackIcon from "./BackIcon"
 import SettingLabel from "./SettingLabel"
@@ -11,12 +15,25 @@ const SettingDrawer = ({ close, setClose }) => {
   const [leetcodeProblemSolved] = useStorage<boolean>("leetCodeProblemSolved")
   const [includePremium, setIncludePremium] =
     useStorage<boolean>("includePremium")
-  const [enableRedirect, setEnableRedirect] =
-    useStorage<boolean>("enableRedirectOnEveryProblem")
+  const [enableRedirect, setEnableRedirect] = useStorage<boolean>(
+    "enableRedirectOnEveryProblem"
+  )
   const [hyperTortureMode, setHyperTortureMode] =
     useStorage<boolean>("hyperTortureMode")
   const [_, setHTcurrentStreak] = useStorage<number>("HT_currentStreak")
   const settingList = [
+    {
+      name: "Disable the torture",
+      description: "Click to disable/enable redirects",
+      checkboxProps: {
+        checked: enableRedirect ?? false,
+        handleChange: async (e) => {
+          setEnableRedirect(e.target.checked)
+
+          handleRedirectRule()
+        }
+      }
+    },
     {
       name: "Problem Sets",
       description: "Choose the leetcode problems you'd like",
@@ -26,7 +43,7 @@ const SettingDrawer = ({ close, setClose }) => {
           allNeetcode: "All Neetcode Problems",
           NeetCode150: "Neetcode 150",
           Blind75: "Blind 75",
-          metaTop100: "Meta Top 100"
+          metaTop100: "Meta Top 100",
           "lg-5htp6xyg": "LeetCode Curated SQL 70",
           "lg-79h8rn6": "Top 100 Liked Questions",
           "lg-wpwgkgt": "Top Interview Questions",
@@ -35,6 +52,7 @@ const SettingDrawer = ({ close, setClose }) => {
         defaultValue: problemSets,
         handleChange: async (e) => {
           setProblemSets(e.target.value)
+
           !leetcodeProblemSolved ? await updateStorage() : null
         }
       }
@@ -67,16 +85,7 @@ const SettingDrawer = ({ close, setClose }) => {
         }
       }
     },
-    {
-      name: "Enable redirects on additional problems",
-      description: "Toggle whether to redirect to the problem page",
-      checkboxProps: {
-        checked: enableRedirect ?? false,
-        handleChange: async (e) => {
-          setEnableRedirect(e.target.checked)
-        }
-      }
-    },
+
     {
       name: 'Enable "Hyper Torture" mode 🤓',
       description:
@@ -90,7 +99,7 @@ const SettingDrawer = ({ close, setClose }) => {
           await toggleUrlListener(e.target.checked)
         }
       }
-    },
+    }
     /* TODO: Add this feature later
     {
       name: "Number of problems to solve",

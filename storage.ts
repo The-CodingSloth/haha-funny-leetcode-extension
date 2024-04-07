@@ -16,7 +16,7 @@ export const stopLoading = async () => await storage.set("loading", false)
 export const getHyperTortureMode = async () =>
   !!(await storage.get("hyperTortureMode"))
 export const getEnableRedirectOnEveryProblem = async () =>
-  !!(await storage.get("enableRedirectOnEveryProblem"))
+  !(await storage.get("enableRedirectOnEveryProblem"))
 
 export async function updateProblem(
   problem: { url: string; name: string },

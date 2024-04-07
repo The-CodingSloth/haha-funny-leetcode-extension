@@ -1,5 +1,11 @@
 import { getHyperTortureMode, resetHyperTortureStreak, storage } from "storage"
 
+import {
+  getAllLeetCodeProblems,
+  getLeetCodeProblemFromProblemSet
+} from "~leetcodeProblems"
+import type { APILeetCodeProblem, UserState } from "~types"
+
 const LEETCODE_URL = "https://leetcode.com"
 const RULE_ID = 1
 const isLeetCodeUrl = (url: string) => url.includes(LEETCODE_URL)
@@ -24,7 +30,7 @@ const sendUserFailedMessage = () => {
   })
 }
 
-const state = {
+const state: UserState = {
   leetcodeProblemSolved: false,
   leetCodeProblem: {
     url: null,
@@ -33,10 +39,16 @@ const state = {
   lastSubmissionDate: new Date(0),
   solvedListenerActive: false,
   lastAttemptedUrl: null,
-  urlListener: null
+  urlListener: null,
+  includePremium: null,
+  hyperTortureMode: null,
+  HTcurrentStreak: null
 }
 
-const getProblemListFromLeetCodeAPI = async (difficulty: string, problemSet: string) => {
+export async function getProblemListFromLeetCodeAPI(
+  difficulty: string,
+  problemSet: string
+): Promise<APILeetCodeProblem[]> {
   try {
     const query = `
       query problemsetQuestionList {
@@ -89,6 +101,7 @@ const getProblemListFromLeetCodeAPI = async (difficulty: string, problemSet: str
 
     const responseData = await response.json()
     await storage.updatePermissions(true)
+
     return responseData.data.problemsetQuestionList.questions
   } catch (error) {
     console.log(error.toString())
@@ -105,7 +118,8 @@ const getProblemListFromLeetCodeAPI = async (difficulty: string, problemSet: str
 }
 
 export const handleAdditionalProblemRedirect = async (problemUrl: string) => {
-  if (await storage.getEnableRedirectOnEveryProblem()) await setRedirectRule(problemUrl)
+  if (await storage.getEnableRedirectOnEveryProblem())
+    await setRedirectRule(problemUrl)
 }
 
 export async function generateRandomLeetCodeProblem(): Promise<{
@@ -115,59 +129,12 @@ export async function generateRandomLeetCodeProblem(): Promise<{
   try {
     const problemSet = await storage.getProblemSet()
     const difficulty = await storage.getDifficulty()
-    const includePremium = await storage.getIncludePremium()
-    let leetCodeProblems = []
     // Check if list is from Leetcode Graphql or all
     if (problemSet === "all" || problemSet.startsWith("lg")) {
       await storage.initiateLoading()
-      // Remove lg- or all from string for better logic processing
-      leetCodeProblems = await getProblemListFromLeetCodeAPI(
-        difficulty,
-        problemSet?.slice(3) || ""
-      )
-      let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
-      while (leetCodeProblems[randomIndex].paidOnly) {
-        randomIndex++
-        randomIndex =
-          (leetCodeProblems.length + randomIndex) % leetCodeProblems.length
-      }
-      const randomProblem = leetCodeProblems[randomIndex]
-      // Replace anything that is not a string or whitespace with "" then replace empty spaces with "-"
-      const randomProblemURL =
-        "https://leetcode.com/problems/" +
-        randomProblem.title
-          .trim()
-          .replace(/[^a-zA-Z\s]/g, "")
-          .replace(/\s+/g, "-")
-          .toLowerCase() +
-        "/"
-      const randomProblemName = randomProblem.title
-      // await storage.set("loading", false)
-      await storage.stopLoading()
-      return { url: randomProblemURL, name: randomProblemName }
+      return await getAllLeetCodeProblems(difficulty, problemSet)
     } else {
-      // TODO: Need to find a way to filter out premium problems for these JSON files
-      const problemSetURLs = {
-        allNeetcode: "leetcode-problems/allProblems.json",
-        NeetCode150: "leetcode-problems/neetCode150Problems.json",
-        Blind75: "leetcode-problems/blind75Problems.json",
-        metaTop100: "leetcode-problems/metaTop100.json"
-      }
-      const res = await fetch(chrome.runtime.getURL(problemSetURLs[problemSet]))
-      leetCodeProblems = await res.json()
-      leetCodeProblems = leetCodeProblems.filter((problem) => {
-        return (
-          (includePremium || !problem.isPremium) &&
-          (difficulty == "all" ||
-            problem.difficulty.toLowerCase() === difficulty.toLowerCase())
-        )
-      })
-
-      let randomIndex = Math.floor(Math.random() * leetCodeProblems.length)
-      const randomProblem = leetCodeProblems[randomIndex]
-      const randomProblemURL = randomProblem.href
-      const randomProblemName = randomProblem.text
-      return { url: randomProblemURL, name: randomProblemName }
+      return await getLeetCodeProblemFromProblemSet(difficulty, problemSet)
     }
   } catch (error) {
     console.error("Error generating random problem", error)
@@ -177,7 +144,11 @@ export async function generateRandomLeetCodeProblem(): Promise<{
   }
 }
 
-const onMessageReceived = (message, sender, sendResponse) => {
+function onMessageReceived(
+  message: any,
+  sender: chrome.runtime.MessageSender,
+  sendResponse: (response?: any) => void
+): void {
   switch (message.action) {
     case "fetchingProblem":
       // Handle the start of the problem fetch.
@@ -193,11 +164,13 @@ const onMessageReceived = (message, sender, sendResponse) => {
         problemSolved: state.leetcodeProblemSolved,
         problem: state.leetCodeProblem
       })
-      return true
     case "userClickedSubmit":
       state.lastSubmissionDate = new Date()
       state.solvedListenerActive = true
-      console.log("User clicked submit, adding listener", state.solvedListenerActive)
+      console.log(
+        "User clicked submit, adding listener",
+        state.solvedListenerActive
+      )
       chrome.webRequest.onCompleted.addListener(checkIfUserSolvedProblem, {
         urls: ["*://leetcode.com/submissions/detail/*/check/"]
       })
@@ -238,22 +211,29 @@ async function setRedirectRule(redirectUrl: string) {
   }
 }
 
-export const updateProblemState = async (problem: { name: string, url: string }) => {
+export const updateProblemState = async (problem: {
+  name: string
+  url: string
+}) => {
   await storage.updateProblem(problem, state.leetcodeProblemSolved)
 }
 
 export const updateStorage = async () => {
   try {
+    const isRedirectEnabled = await storage.getEnableRedirectOnEveryProblem()
     let problem = await generateRandomLeetCodeProblem()
     state.leetcodeProblemSolved = false
     updateProblemState(problem)
-    if (!state.leetcodeProblemSolved) await setRedirectRule(problem.url)
+    if (!state.leetcodeProblemSolved && isRedirectEnabled)
+      await setRedirectRule(problem.url)
   } catch (error) {
     throw new Error("Error generating random problem: " + error)
   }
 }
 
-const checkIfUserSolvedProblem = async (details) => {
+const checkIfUserSolvedProblem = async (
+  details: chrome.webRequest.WebResponseCacheDetails
+) => {
   // If the user has already solved the problem, then don't do anything
   if (await storage.getProblemSolved()) return
   // Get the current active tab's URL
@@ -321,6 +301,7 @@ const checkIfUserSolvedProblem = async (details) => {
         })
         chrome.webRequest.onCompleted.removeListener(checkIfUserSolvedProblem)
         if (hyperTortureMode) {
+          console.log("Hyper torture mode is enabled")
           if (state.lastAttemptedUrl) {
             chrome.tabs.update({ url: state.lastAttemptedUrl })
           }
@@ -348,23 +329,41 @@ async function tryResetStreak() {
 export async function toggleUrlListener(toggle: boolean): Promise<void> {
   if (toggle) {
     // Save users request url for further redirect
-    state.urlListener = chrome.webRequest.onBeforeRequest.addListener(
-      (details) => {
-        if (
-          !isLeetCodeUrl(details.url) &&
-          details.type === "main_frame" &&
-          !details.url.includes("chrome-extension:")
-        ) {
-          state.lastAttemptedUrl = details.url
-        }
-      },
-      { urls: ["<all_urls>"] }
-    )
+    // Save users request url for further redirect
+    state.urlListener = (details: chrome.webRequest.WebRequestBodyDetails) => {
+      if (
+        !isLeetCodeUrl(details.url) &&
+        details.type === "main_frame" &&
+        !details.url.includes("chrome-extension:")
+      ) {
+        state.lastAttemptedUrl = details.url
+      }
+      return null // return null when no BlockingResponse is needed
+    }
+
+    chrome.webRequest.onBeforeRequest.addListener(state.urlListener, {
+      urls: ["<all_urls>"]
+    })
   } else {
     chrome.webRequest.onBeforeRequest.removeListener(state.urlListener)
   }
 }
-
+export async function handleRedirectRule() {
+  const isRedirectEnabled = await storage.getEnableRedirectOnEveryProblem()
+  if (isRedirectEnabled) {
+    const problemUrl = await storage.getProblemUrl()
+    await setRedirectRule(problemUrl)
+  } else {
+    try {
+      chrome.declarativeNetRequest.updateDynamicRules({
+        removeRuleIds: [RULE_ID]
+      })
+      console.log("Redirect rule removed")
+    } catch (error) {
+      console.error("Error removing redirect rule:", error)
+    }
+  }
+}
 const getMsUntilMidnight = () => {
   const currentTime = Date.now()
   const midnight = new Date()
@@ -384,7 +383,7 @@ chrome.alarms.get("midnightAlarm", (alarm) => {
   const oneDayInMinutes = 60 * 24
   chrome.alarms.create("midnightAlarm", {
     when: Date.now() + msUntilMidnight,
-    periodInMinutes: oneDayInMinutes,
+    periodInMinutes: oneDayInMinutes
   })
 })
 
