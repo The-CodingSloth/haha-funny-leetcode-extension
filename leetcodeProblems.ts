@@ -24,13 +24,7 @@ export async function getAllLeetCodeProblems(
     // Replace anything that is not a string or whitespace with "" then replace empty spaces with "-"
     //Error with some problems with special characters TODO: Fix this ex: nondrecreasing subequence -> non-decreasing-subsequence
     const randomProblemURL =
-      "https://leetcode.com/problems/" +
-      randomProblem.title
-        .trim()
-        .replace(/[^a-zA-Z\s]/g, "")
-        .replace(/\s+/g, "-")
-        .toLowerCase() +
-      "/"
+      "https://leetcode.com/problems/" + randomProblem.titleSlug + "/"
     const randomProblemName = randomProblem.title
     // await storage.set("loading", false)
     await storage.stopLoading()
@@ -58,6 +52,9 @@ export async function getLeetCodeProblemFromProblemSet(
     const leetCodeProblems: JSONLeetCodeProblem[] = await res.json()
     const filteredLeetCodeProblems: JSONLeetCodeProblem[] =
       leetCodeProblems.filter((problem) => {
+        if (!problem.href.endsWith("/")) {
+          problem.href += "/"
+        }
         return (
           (includePremium || !problem.isPremium) &&
           (difficulty == "all" ||
